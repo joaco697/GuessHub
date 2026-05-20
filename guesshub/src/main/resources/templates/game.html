@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GuessHub — Jugar</title>
+  <link rel="stylesheet" href="../static/css/styles.css" />
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- ── RESULT MODAL ──────────────────────────────────────────── -->
+<!-- Se muestra al recibir la respuesta de POST /api/rounds/answer -->
+<div class="modal-overlay hidden" id="modal-result">
+  <div class="modal">
+    <div style="font-size:3.5rem;margin-bottom:.5rem" id="modal-icon">🎉</div>
+    <div style="font-size:1.3rem;font-weight:900;margin-bottom:.25rem" id="modal-title">¡Correcto!</div>
+    <div style="color:var(--text-light);font-size:.9rem;margin-bottom:.75rem">
+      La respuesta era: <strong id="modal-answer"></strong>
+    </div>
+    <div style="font-size:2.2rem;font-weight:900;margin-bottom:1.4rem" id="modal-pts"></div>
+    <div style="display:flex;flex-direction:column;gap:.6rem">
+      <button class="btn-green" id="btn-next">Siguiente pregunta →</button>
+      <button
+        style="background:none;color:var(--text-light);font-weight:700;font-size:.9rem;padding:.4rem"
+        onclick="location.href='index.html'"
+      >Volver al inicio</button>
+    </div>
+  </div>
+</div>
+
+<div class="phone-frame">
+
+  <!-- ── NAVBAR GAME ────────────────────────────────────────── -->
+  <div class="navbar-game">
+    <button class="btn-volver" onclick="location.href='index.html'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+      Volver
+    </button>
+    <div class="game-top-badges">
+      <!-- Racha: actualizar con renderStreak() -->
+      <span class="pill pill-orange">🔥 <span id="nav-streak">–</span></span>
+      <!-- Puntaje acumulado: actualizar con renderScore() -->
+      <span class="pill pill-green-outline">🏆 <span id="nav-score">0</span></span>
+    </div>
+  </div>
+
+  <!-- ── SCREEN ─────────────────────────────────────────────── -->
+  <div class="screen">
+    <div class="page-inner">
+
+      <!-- Game card -->
+      <div class="game-card" id="game-card">
+
+        <!-- Header: título del juego + timer + multiplicador -->
+        <div class="game-card-header">
+          <div class="game-card-title" id="game-title">–</div>
+          <div class="game-timers">
+            <!-- Timer: actualizar con renderTimer(seconds) -->
+            <span class="pill pill-green" id="timer-badge">
+              🕐 <span id="timer-val">60</span>s
+            </span>
+            <!-- Multiplicador: actualizar con renderMultiplier(val) -->
+            <span class="badge-multiplier" id="multiplier-badge">x2.5</span>
+          </div>
+        </div>
+
+        <!-- Imagen de la pregunta -->
+        <!-- Si la API devuelve imageUrl, reemplazar con <img>  -->
+        <!-- Si no, mostrar el placeholder con el ícono        -->
+        <div class="img-placeholder" id="img-area">
+          <span class="img-icon" id="img-icon">🎬</span>
+          <span id="img-label">Imagen de la película</span>
+        </div>
+
+        <!-- Pistas: se van agregando con addClue(text) -->
+        <div id="clues-container" style="display:flex;flex-direction:column;gap:.5rem">
+          <!-- cada pista es un .clue-row.anim-clue -->
+        </div>
+
+        <!-- Botón pedir pista -->
+        <!-- Deshabilitado cuando no quedan pistas o ya se respondió -->
+        <button class="btn-dashed" id="btn-pista">
+          💡 Pedir pista (<span id="pista-cost">-0.5x</span>)
+        </button>
+
+        <!-- Input de respuesta -->
+        <input
+          class="answer-input"
+          id="answer-input"
+          type="text"
+          placeholder="Escribe el nombre…"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+
+        <!-- Enviar respuesta -->
+        <button class="btn-green" id="btn-enviar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+          Enviar Respuesta
+        </button>
+
+        <!-- Puntaje potencial: actualizar con renderPotential(pts) -->
+        <div class="potential-score">
+          Puntaje potencial: <strong id="potential-pts">–</strong> pts
+        </div>
+
+      </div><!-- /game-card -->
+
+      <!-- Ranking en vivo -->
+      <div class="card">
+        <div class="live-ranking-title"><span>🏆</span> Ranking en vivo</div>
+        <div id="live-ranking">
+          <!-- renderizado por renderLiveRanking(players) -->
+        </div>
+      </div>
+
+      <div style="height:.5rem"></div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM NAV ──────────────────────────────────────────── -->
+  <nav class="bottom-nav">
+    <button class="bn-item" onclick="location.href='index.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="bn-item" onclick="location.href='ranking.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 20h2V8H7v12zm2-18H7v2h2V2zm4 18h2V4h-2v16zm6 0h2v-8h-2v8zm0-10h2V8h-2v2z"/></svg>
+      Ranking
+    </button>
+    <button class="bn-item active">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      Jugar
+    </button>
+    <button class="bn-item" onclick="location.href='perfil.html'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      Perfil
+    </button>
+  </nav>
+
+</div><!-- /phone-frame -->
+
+<script>
+/* =============================================================
+   game.js — SOLO ANIMACIONES Y RENDER
+   =============================================================
+   Lógica que NO está aquí (va en Spring Boot):
+     - Calcular puntaje y multiplicadores
+     - Validar si la respuesta es correcta
+     - Controlar cuántas pistas quedan
+     - Guardar el progreso de la ronda
+
+   Lo que SÍ hace este archivo:
+     - Animar el timer (countdown visual)
+     - Mostrar/ocultar pistas con animación
+     - Aplicar clases de correcto/incorrecto al input
+     - Abrir/cerrar el modal de resultado
+     - Actualizar los números en pantalla
+   ============================================================= */
+
+// ── Timer visual ──────────────────────────────────────────────
+// El backend envía el tiempo total al inicio de la ronda.
+// El frontend solo anima el countdown; cuando llega a 0, avisa al backend.
+let _timerInterval = null;
+
+function startTimer(seconds) {
+  clearInterval(_timerInterval);
+  renderTimer(seconds);
+  _timerInterval = setInterval(() => {
+    seconds--;
+    renderTimer(seconds);
+    if (seconds <= 0) {
+      clearInterval(_timerInterval);
+      onTimerEnd(); // avisa al backend
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(_timerInterval);
+}
+
+function renderTimer(seconds) {
+  document.getElementById('timer-val').textContent = seconds;
+  const badge = document.getElementById('timer-badge');
+  // Cambiar color según urgencia (visual puro)
+  if (seconds <= 10) {
+    badge.className = 'pill';
+    badge.style.background = 'var(--red)';
+    badge.style.color = '#fff';
+    badge.classList.add('anim-timer-pulse');
+  } else if (seconds <= 20) {
+    badge.className = 'pill';
+    badge.style.background = 'var(--yellow)';
+    badge.style.color = '#fff';
+    badge.classList.remove('anim-timer-pulse');
+  } else {
+    badge.className = 'pill pill-green';
+    badge.style.background = '';
+    badge.style.color = '';
+    badge.classList.remove('anim-timer-pulse');
+  }
+}
+
+function onTimerEnd() {
+  // TODO: llamar a POST /api/rounds/timeout con el roundId
+  // La API responderá con correct:false y el nombre correcto
+  // Luego llamar a showResultModal(false, correctAnswer, 0)
+  setInputState('wrong');
+  disableInput();
+}
+
+// ── Render título y datos de la pregunta ──────────────────────
+// Llamar con los datos de GET /api/games/{id}/question
+// question: { title, imageUrl, imageIcon }
+function renderQuestion(question) {
+  document.getElementById('game-title').textContent = question.title;
+
+  const imgArea  = document.getElementById('img-area');
+  const imgIcon  = document.getElementById('img-icon');
+  const imgLabel = document.getElementById('img-label');
+
+  if (question.imageUrl) {
+    imgArea.innerHTML = `<img src="${question.imageUrl}" alt="${question.title}" />`;
+  } else {
+    imgIcon.textContent  = question.imageIcon || '🎬';
+    imgLabel.textContent = 'Imagen de la película';
+  }
+  imgArea.classList.add('anim-pop');
+}
+
+// ── Agregar una pista ─────────────────────────────────────────
+// Llamar con el texto de la pista que devuelve POST /api/rounds/clue
+// text: string
+function addClue(text) {
+  const container = document.getElementById('clues-container');
+  const div = document.createElement('div');
+  div.className = 'clue-row anim-clue';
+  div.innerHTML = `<span class="clue-bulb">💡</span>${text}`;
+  container.appendChild(div);
+  // Scroll suave hacia abajo para que se vea la pista nueva
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Render multiplicador ──────────────────────────────────────
+// Llamar cada vez que cambia (el backend lo calcula)
+// val: número, ej: 2.5
+function renderMultiplier(val) {
+  const badge = document.getElementById('multiplier-badge');
+  badge.textContent = `x${val}`;
+  badge.classList.remove('anim-multiplier');
+  void badge.offsetWidth; // reflow para reiniciar animación
+  badge.classList.add('anim-multiplier');
+}
+
+// ── Render puntaje potencial ──────────────────────────────────
+// Llamar con el número que devuelve el backend
+// pts: número
+function renderPotential(pts) {
+  const el = document.getElementById('potential-pts');
+  el.textContent = Number(pts).toLocaleString();
+  el.classList.remove('anim-pts');
+  void el.offsetWidth;
+  el.classList.add('anim-pts');
+}
+
+// ── Render puntaje acumulado (navbar) ─────────────────────────
+// pts: número total de la sesión
+function renderScore(pts) {
+  const el = document.getElementById('nav-score');
+  el.textContent = Number(pts).toLocaleString();
+  el.classList.remove('anim-score-bump');
+  void el.offsetWidth;
+  el.classList.add('anim-score-bump');
+}
+
+// ── Render racha (navbar) ─────────────────────────────────────
+function renderStreak(days) {
+  document.getElementById('nav-streak').textContent = days;
+}
+
+// ── Costo de pista en el botón ────────────────────────────────
+// cost: string, ej: "-0.5x"
+function renderPistaCost(cost) {
+  document.getElementById('pista-cost').textContent = cost;
+}
+
+// ── Estado visual del input ───────────────────────────────────
+// state: 'correct' | 'wrong' | 'default'
+function setInputState(state) {
+  const input = document.getElementById('answer-input');
+  input.classList.remove('state-correct', 'state-wrong');
+  if (state === 'correct') input.classList.add('state-correct');
+  if (state === 'wrong') {
+    input.classList.add('state-wrong');
+    document.getElementById('game-card').classList.remove('anim-shake');
+    void document.getElementById('game-card').offsetWidth;
+    document.getElementById('game-card').classList.add('anim-shake');
+  }
+}
+
+function disableInput() {
+  document.getElementById('answer-input').disabled = true;
+  document.getElementById('btn-enviar').disabled = true;
+  document.getElementById('btn-pista').disabled = true;
+}
+
+function enableInput() {
+  document.getElementById('answer-input').disabled = false;
+  document.getElementById('btn-enviar').disabled = false;
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-input').classList.remove('state-correct','state-wrong');
+}
+
+function disablePista() {
+  document.getElementById('btn-pista').disabled = true;
+}
+
+// ── Modal de resultado ────────────────────────────────────────
+// Llamar con los datos que devuelve POST /api/rounds/answer
+// correct: bool, correctAnswer: string, pts: número
+function showResultModal(correct, correctAnswer, pts) {
+  document.getElementById('modal-icon').textContent  = correct ? '🎉' : '😔';
+  document.getElementById('modal-title').textContent = correct ? '¡Correcto!' : 'Incorrecto';
+  document.getElementById('modal-answer').textContent = correctAnswer;
+  const ptsEl = document.getElementById('modal-pts');
+  ptsEl.textContent = correct ? `+${Number(pts).toLocaleString()} pts` : '0 pts';
+  ptsEl.style.color = correct ? 'var(--green)' : 'var(--red)';
+  document.getElementById('modal-result').classList.remove('hidden');
+}
+
+function hideResultModal() {
+  document.getElementById('modal-result').classList.add('hidden');
+}
+
+// ── Render ranking en vivo ────────────────────────────────────
+// Llamar con datos de GET /api/ranking/live o luego de cada respuesta
+// players: [{ name, score, isMe }]
+function renderLiveRanking(players) {
+  const circles = ['c1','c2','c3','cn','cn','cn','cn','cn','cn','cn'];
+  const container = document.getElementById('live-ranking');
+  container.innerHTML = '';
+  players.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'lb-row' + (i < 3 ? ' top3' : '');
+    row.style.marginBottom = '.3rem';
+    row.innerHTML = `
+      <div class="lb-num-circle ${circles[i] || 'cn'}">${i + 1}</div>
+      <span class="lb-name" style="${p.isMe ? 'color:var(--green);font-weight:900' : ''}">${p.name}</span>
+      <span class="lb-score">${Number(p.score).toLocaleString()}</span>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => {
+    t.classList.add('removing');
+    setTimeout(() => t.remove(), 260);
+  }, 2600);
+}
+
+// ── Botón "Siguiente" en el modal ──────────────────────────────
+// Cuando el backend esté, este botón llamará a la API para la próxima pregunta
+document.getElementById('btn-next').addEventListener('click', () => {
+  hideResultModal();
+  // Limpiar estado visual para la próxima pregunta
+  document.getElementById('clues-container').innerHTML = '';
+  enableInput();
+  document.getElementById('game-title').textContent = '–';
+  document.getElementById('potential-pts').textContent = '–';
+  document.getElementById('multiplier-badge').textContent = 'x2.5';
+  document.getElementById('img-icon').textContent = '🎬';
+  document.getElementById('img-label').textContent = 'Imagen de la película';
+  document.getElementById('img-area').innerHTML = `
+    <span class="img-icon" id="img-icon">🎬</span>
+    <span id="img-label">Imagen de la película</span>
+  `;
+  // TODO: llamar a GET /api/games/{id}/next o POST /api/rounds/start
+});
+
+/*
+  ── EJEMPLO de integración con Spring Boot ─────────────────────
+
+  const roundId = new URLSearchParams(location.search).get('roundId');
+
+  async function loadRound() {
+    const token = localStorage.getItem('token');
+    const round = await fetch(`/api/rounds/${roundId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+
+    renderQuestion(round.question);
+    renderMultiplier(round.multiplier);
+    renderPotential(round.potentialScore);
+    renderStreak(round.userStreak);
+    startTimer(round.timeLeft);
+    round.cluesRevealed.forEach(c => addClue(c));
+    renderLiveRanking(round.liveRanking);
+  }
+
+  document.getElementById('btn-pista').addEventListener('click', async () => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/rounds/${roundId}/clue`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+
+    addClue(res.clueText);
+    renderMultiplier(res.newMultiplier);
+    renderPotential(res.newPotentialScore);
+    renderPistaCost(res.nextCost);
+    if (!res.hasMoreClues) disablePista();
+  });
+
+  document.getElementById('btn-enviar').addEventListener('click', async () => {
+    const answer = document.getElementById('answer-input').value.trim();
+    if (!answer) return;
+    stopTimer();
+    disableInput();
+
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/rounds/${roundId}/answer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ answer })
+    }).then(r => r.json());
+
+    setInputState(res.correct ? 'correct' : 'wrong');
+    renderScore(res.totalScore);
+    renderLiveRanking(res.liveRanking);
+    setTimeout(() => showResultModal(res.correct, res.correctAnswer, res.pointsEarned), 400);
+  });
+
+  loadRound();
+*/
+</script>
+
+</body>
+</html>
