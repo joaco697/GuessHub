@@ -26,7 +26,7 @@ public class EquipoController {
 
         try {
 
-            List<EquipoDTO> canciones = equipoService.obtenerEquiposPorNombre("");
+            List<EquipoDTO> canciones = equipoService.obtenerTrackRandom();
 
             if (canciones.isEmpty()) {
                 return ResponseEntity.noContent().build();

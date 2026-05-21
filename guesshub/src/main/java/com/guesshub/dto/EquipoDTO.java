@@ -12,11 +12,9 @@ import lombok.AllArgsConstructor;
 public class EquipoDTO {
     private int id;
     private String nombre;
-    private String pais;
-    private int fundacion;
+    private String pista1;
+    private String pista2;
     private String logo;
-    private String estadio;
-    private String direccionEstadio;
-    private String ciudad;
-    private int capacidadEstadio;
+    private String pista3;
+    
 }

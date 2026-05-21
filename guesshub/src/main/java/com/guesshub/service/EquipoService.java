@@ -18,51 +18,63 @@ public class EquipoService {
 
     private static final String BASE_URL = "https://api.deezer.com/track/";
 
-    public List<EquipoDTO> obtenerEquiposPorNombre(String nombreEquipo) throws Exception {
+    public List<EquipoDTO> obtenerTrackRandom() throws Exception {
 
         int minimo = 508000;
         int maximo = 100000000;
 
-        int idRandom = ThreadLocalRandom.current().nextInt(minimo, maximo + 1);
+        List<EquipoDTO> tracks = new ArrayList<>();
 
-        String url = BASE_URL + idRandom;
+        JSONObject json = null;
+        int rank = Integer.MAX_VALUE;
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
+        while (rank > 1000) {
 
-        HttpResponse<String> response = HttpClient.newHttpClient()
-                .send(request, HttpResponse.BodyHandlers.ofString());
+            int idRandom = ThreadLocalRandom.current().nextInt(minimo, maximo + 1);
 
-        JSONObject json = new JSONObject(response.body());
+            String url = BASE_URL + idRandom;
 
-        List<EquipoDTO> equipos = new ArrayList<>();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            json = new JSONObject(response.body());
+
+            // Si no existe el rank seguimos buscando
+            if (!json.has("rank")) {
+                continue;
+            }
+
+            rank = json.getInt("rank");
+
+            // Si cumple la condición cortamos el loop
+            if (rank <= 1000) {
+                break;
+            }
+        }
 
         EquipoDTO dto = new EquipoDTO();
 
-        // ID de la canción
         dto.setId(json.getInt("id"));
 
-        // Título de la canción
-        dto.setNombre("Título: " + json.getString("title"));
+        dto.setNombre("Respuesta correcta: " + json.getString("title"));
 
-        // Nombre del cantante/artista
         JSONObject artistObj = json.getJSONObject("artist");
-        dto.setPais("Artista: " + artistObj.getString("name"));
+        dto.setPista1("La canción es de " + artistObj.getString("name"));
 
-        // Nombre del álbum
         JSONObject albumObj = json.getJSONObject("album");
-        dto.setEstadio("Álbum: " + albumObj.getString("title"));
+        dto.setPista2("Es del álbum  " + albumObj.getString("title"));
 
-        // Fecha de lanzamiento
-        dto.setDireccionEstadio("Lanzamiento: " + json.getString("release_date"));
+        dto.setPista3("El año de lanzamiento fue en " + json.getString("release_date"));
 
-        // Cover del álbum
         dto.setLogo(albumObj.getString("cover_big"));
 
-        equipos.add(dto);
+        tracks.add(dto);
 
-        return equipos;
+        return tracks;
     }
 }
