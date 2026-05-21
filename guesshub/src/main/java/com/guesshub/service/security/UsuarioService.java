@@ -1,0 +1,45 @@
+package com.guesshub.service.security;
+
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.guesshub.entity.security.Rol;
+import com.guesshub.entity.security.Usuario;
+import com.guesshub.repository.security.RolRepository;
+import com.guesshub.repository.security.UsuarioRepository;
+
+@Service
+public class UsuarioService {
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RolRepository rolRepository;
+
+    public List<Usuario> getAllUsuarios() {
+        return usuarioRepository.findAll();
+    }
+
+    public Usuario registrar(Usuario usuario, String password, String verificacionPassword) {
+        if (password == null || verificacionPassword == null) {
+            throw new IllegalArgumentException("Las contraseñas no pueden ser null");
+        }
+        if (!password.equals(verificacionPassword)) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden");
+        }
+        if (usuarioRepository.existsByUsername(usuario.getUsername())) {
+            throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+        }
+
+        usuario.setPassword(passwordEncoder.encode(password));
+        Rol rolCliente = rolRepository.findByNombre("CLIENTE").orElseThrow(() -> new IllegalArgumentException("Rol 'CLIENTE' no encontrado"));
+        usuario.setRoles(Set.of(rolCliente));
+        return usuarioRepository.save(usuario);
+    }
+}
+
