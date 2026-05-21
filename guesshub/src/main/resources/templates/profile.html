@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GuessHub — Perfil</title>
+  <link rel="stylesheet" href="../static/css/styles.css" />
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div id="toast-container"></div>
+
+<div class="page">
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-logo font-display"><a href="index.html">Guess<span>Hub</span></a></div>
+    <div class="navbar-links">
+      <a href="index.html">Inicio</a>
+      <a href="game.html">Jugar</a>
+      <a href="leaderboard.html">Ranking</a>
+      <a href="profile.html" class="active">Perfil</a>
+    </div>
+    <div class="navbar-user">
+      <span style="font-size:.85rem;color:var(--muted)">Hola, <strong style="color:var(--text)">Alex</strong></span>
+      <div class="avatar">A</div>
+    </div>
+  </nav>
+
+  <!-- PROFILE HERO -->
+  <div class="profile-hero">
+    <div class="profile-inner">
+      <div class="profile-top">
+        <div class="profile-avatar-lg">A</div>
+        <div class="profile-info">
+          <div class="profile-name font-display">Alex Rodríguez</div>
+          <div class="profile-handle">@alex_rodriguez · Miembro desde Feb 2024</div>
+          <div class="profile-badges">
+            <span class="badge badge-purple">🎮 Jugador activo</span>
+            <span class="badge badge-orange">🔥 Racha x5</span>
+            <span class="badge badge-teal">🌍 Ranking #6</span>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="showToast('Editar perfil próximamente','info')" style="margin-left:auto;align-self:flex-start">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          Editar
+        </button>
+      </div>
+      <div class="profile-stats-row">
+        <div class="stat-box">
+          <div class="stat-val font-display" style="color:var(--accent)">5,420</div>
+          <div class="stat-lbl">Puntos</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val font-display">64</div>
+          <div class="stat-lbl">Partidas</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val font-display" style="color:var(--success)">71%</div>
+          <div class="stat-lbl">Precisión</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val font-display" style="color:var(--warning)">12</div>
+          <div class="stat-lbl">Logros</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val font-display" style="color:var(--accent2)">#6</div>
+          <div class="stat-lbl">Ranking</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="profile-content">
+    <div class="profile-grid">
+
+      <!-- Left col -->
+      <div style="display:flex;flex-direction:column;gap:1.5rem">
+
+        <!-- Favorite categories -->
+        <div class="card">
+          <h3 class="font-display" style="font-size:1rem;font-weight:700;margin-bottom:1.25rem">Categorías favoritas</h3>
+          <div style="display:flex;flex-direction:column;gap:.9rem" id="fav-cats"></div>
+        </div>
+
+        <!-- Weekly activity -->
+        <div class="card">
+          <h3 class="font-display" style="font-size:1rem;font-weight:700;margin-bottom:1.25rem">Actividad semanal</h3>
+          <div style="display:flex;align-items:flex-end;gap:.4rem;height:80px" id="activity-bars"></div>
+          <div style="display:flex;gap:.4rem;margin-top:.4rem" id="activity-labels"></div>
+        </div>
+
+        <!-- Settings -->
+        <div class="card">
+          <h3 class="font-display" style="font-size:1rem;font-weight:700;margin-bottom:1.25rem">Configuración</h3>
+          <div style="display:flex;flex-direction:column;gap:.75rem">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:.9rem;font-weight:500">Sonidos</div>
+                <div style="font-size:.78rem;color:var(--muted)">Efectos de sonido en el juego</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" checked id="toggle-sound" onchange="toggleSetting('sound',this)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div style="height:1px;background:var(--border)"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:.9rem;font-weight:500">Notificaciones</div>
+                <div style="font-size:.78rem;color:var(--muted)">Avisos de ranking y logros</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="toggle-notif" onchange="toggleSetting('notif',this)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div style="height:1px;background:var(--border)"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:.9rem;font-weight:500">Modo difícil</div>
+                <div style="font-size:.78rem;color:var(--muted)">Menos tiempo por pregunta</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="toggle-hard" onchange="toggleSetting('hard',this)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right col -->
+      <div style="display:flex;flex-direction:column;gap:1.5rem">
+
+        <!-- Achievements -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+            <h3 class="font-display" style="font-size:1rem;font-weight:700">Logros</h3>
+            <span style="font-size:.8rem;color:var(--muted)">12 / 20 desbloqueados</span>
+          </div>
+          <div class="achievement-grid" id="achievements-grid"></div>
+        </div>
+
+        <!-- Match history -->
+        <div class="card">
+          <h3 class="font-display" style="font-size:1rem;font-weight:700;margin-bottom:1.25rem">Historial reciente</h3>
+          <div style="overflow-x:auto">
+            <table class="history-table" id="history-table">
+              <thead>
+                <tr>
+                  <th>Categoría</th>
+                  <th>Puntos</th>
+                  <th>Precisión</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody id="history-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <footer style="border-top:1px solid var(--border);padding:1.5rem 2rem;text-align:center;color:var(--muted);font-size:.82rem;">
+    © 2025 GuessHub · Hecho con ♥
+  </footer>
+</div>
+
+<style>
+/* Toggle switch */
+.toggle { position:relative; display:inline-block; width:44px; height:24px; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider {
+  position:absolute; inset:0;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:100px; cursor:pointer;
+  transition:background var(--transition);
+}
+.toggle-slider::before {
+  content:''; position:absolute;
+  width:18px; height:18px; left:2px; top:2px;
+  background:var(--muted); border-radius:50%;
+  transition:transform var(--transition), background var(--transition);
+}
+.toggle input:checked + .toggle-slider { background:rgba(124,92,252,.2); border-color:var(--accent); }
+.toggle input:checked + .toggle-slider::before { transform:translateX(20px); background:var(--accent); }
+</style>
+
+<script>
+  // ── Favorite categories ───────────────────────────────────────
+  const favCats = [
+    { icon:'🎬', name:'Cine',      pct:82, color:'var(--accent)' },
+    { icon:'⚽', name:'Deportes',  pct:65, color:'var(--accent2)' },
+    { icon:'🎵', name:'Música',    pct:58, color:'var(--accent3)' },
+    { icon:'🌍', name:'Geografía', pct:44, color:'var(--warning)' },
+  ];
+  const fc = document.getElementById('fav-cats');
+  favCats.forEach(c => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem">
+        <div style="display:flex;align-items:center;gap:.5rem;font-size:.9rem;font-weight:500">
+          <span>${c.icon}</span>${c.name}
+        </div>
+        <span style="font-size:.78rem;color:var(--muted)">${c.pct}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${c.pct}%;background:${c.color}"></div>
+      </div>
+    `;
+    fc.appendChild(div);
+  });
+
+  // ── Activity bars ─────────────────────────────────────────────
+  const days = ['L','M','X','J','V','S','D'];
+  const values = [3,5,2,7,4,8,6];
+  const maxVal = Math.max(...values);
+  const barsEl = document.getElementById('activity-bars');
+  const labelsEl = document.getElementById('activity-labels');
+  days.forEach((d, i) => {
+    const bar = document.createElement('div');
+    bar.style.cssText = `
+      flex:1; border-radius:4px 4px 0 0;
+      background: linear-gradient(to top, var(--accent), var(--accent2));
+      height:${Math.round((values[i]/maxVal)*100)}%;
+      opacity:${d==='S'?1:0.5};
+      transition:opacity .2s;
+    `;
+    bar.addEventListener('mouseenter', () => { bar.style.opacity='1'; });
+    bar.addEventListener('mouseleave', () => { bar.style.opacity = d==='S'?'1':'0.5'; });
+    barsEl.appendChild(bar);
+
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'flex:1;text-align:center;font-size:.72rem;color:var(--muted)';
+    lbl.textContent = d;
+    labelsEl.appendChild(lbl);
+  });
+
+  // ── Achievements ──────────────────────────────────────────────
+  const achievements = [
+    { icon:'🏆', name:'Primer win',     unlocked:true  },
+    { icon:'🔥', name:'Racha x5',       unlocked:true  },
+    { icon:'⚡', name:'Velocista',      unlocked:true  },
+    { icon:'🎯', name:'100% precisión', unlocked:true  },
+    { icon:'🌍', name:'Explorador',     unlocked:true  },
+    { icon:'🧠', name:'Sabio',          unlocked:true  },
+    { icon:'🎬', name:'Cinéfilo',       unlocked:true  },
+    { icon:'⚽', name:'Deportista',     unlocked:true  },
+    { icon:'🎵', name:'Melómano',       unlocked:true  },
+    { icon:'🌟', name:'Top 10',         unlocked:true  },
+    { icon:'💎', name:'50 partidas',    unlocked:true  },
+    { icon:'👑', name:'Maestro',        unlocked:true  },
+    { icon:'🚀', name:'Top 5',          unlocked:false },
+    { icon:'💯', name:'Perfecto x3',    unlocked:false },
+    { icon:'🗺️', name:'Viajero',       unlocked:false },
+    { icon:'🌈', name:'Todo categorías',unlocked:false },
+  ];
+  const ag = document.getElementById('achievements-grid');
+  achievements.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'achievement-item ' + (a.unlocked ? 'unlocked' : 'locked');
+    div.innerHTML = `<div class="achievement-icon">${a.icon}</div><div class="achievement-name">${a.name}</div>`;
+    if (a.unlocked) div.setAttribute('data-tip', a.name);
+    ag.appendChild(div);
+  });
+
+  // ── History ───────────────────────────────────────────────────
+  const history = [
+    { cat:'🎬 Cine',      pts:920,  acc:'92%', date:'Hoy, 14:32',     ok:true },
+    { cat:'⚽ Deportes',  pts:780,  acc:'78%', date:'Hoy, 11:15',     ok:true },
+    { cat:'🌍 Geografía', pts:440,  acc:'44%', date:'Ayer, 20:08',    ok:false },
+    { cat:'🎵 Música',    pts:860,  acc:'86%', date:'Ayer, 18:45',    ok:true },
+    { cat:'🎬 Cine',      pts:700,  acc:'70%', date:'07/05, 09:22',   ok:true },
+    { cat:'⚽ Deportes',  pts:310,  acc:'31%', date:'06/05, 22:11',   ok:false },
+  ];
+  const tbody = document.getElementById('history-body');
+  history.forEach(h => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${h.cat}</td>
+      <td><strong style="color:var(--accent);font-family:'Syne',sans-serif">${h.pts}</strong></td>
+      <td><span style="color:${h.ok ? 'var(--success)' : 'var(--error)'}">${h.acc}</span></td>
+      <td style="color:var(--muted)">${h.date}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // ── Settings ──────────────────────────────────────────────────
+  function toggleSetting(key, el) {
+    const msgs = {
+      sound: el.checked ? 'Sonidos activados' : 'Sonidos desactivados',
+      notif: el.checked ? 'Notificaciones activadas' : 'Notificaciones desactivadas',
+      hard:  el.checked ? 'Modo difícil activado 💪' : 'Modo difícil desactivado',
+    };
+    showToast(msgs[key], 'info');
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────
+  function showToast(msg, type = 'info') {
+    const icons = { success:'✓', error:'✕', info:'ℹ' };
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span>${icons[type]}</span>${msg}`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => { t.classList.add('toast-exit'); setTimeout(() => t.remove(), 300); }, 3000);
+  }
+</script>
+</body>
+</html>
