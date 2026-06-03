@@ -1,80 +1,120 @@
 package com.guesshub.service;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.guesshub.dto.EquipoDTO;
+import com.guesshub.dto.CancionDTO;
+import com.guesshub.entity.Cancion;
+import com.guesshub.repository.CancionRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class EquipoService {
 
-    private static final String BASE_URL = "https://api.deezer.com/track/";
+    private final CancionRepository cancionRepository;
 
-    public List<EquipoDTO> obtenerTrackRandom() throws Exception {
+    @Value("${deezer.api.url}")
+    private String deezerUrl;
 
-        int minimo = 508000;
-        int maximo = 100000000;
+    /**
+     * 1. Obtiene una canción aleatoria de la BD (sincronizada desde Last.fm)
+     * 2. La busca en Deezer para obtener portada, álbum, fecha y preview
+     * 3. Devuelve el DTO con pistas para el juego
+     */
+    public List<CancionDTO> obtenerTrackRandom() throws Exception {
 
-        List<EquipoDTO> tracks = new ArrayList<>();
+        // 1) Canción random de la BD
+        Cancion cancion = cancionRepository.findRandom()
+                .orElseThrow(() -> new RuntimeException(
+                        "No hay canciones en la base de datos. Hacé sync primero: POST /api/admin/sync"));
 
-        JSONObject json = null;
-        int rank = Integer.MAX_VALUE;
+        // 2) Buscar en Deezer
+        String query = URLEncoder.encode(cancion.getNombre() + " " + cancion.getArtista(),
+                StandardCharsets.UTF_8);
+        String url = deezerUrl + "/search?q=" + query + "&limit=1";
 
-        while (rank > 1000) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
 
-            int idRandom = ThreadLocalRandom.current().nextInt(minimo, maximo + 1);
+        HttpResponse<String> response = HttpClient.newHttpClient()
+                .send(request, HttpResponse.BodyHandlers.ofString());
 
-            String url = BASE_URL + idRandom;
+        JSONObject json = new JSONObject(response.body());
+        JSONArray data = json.optJSONArray("data");
 
+        if (data == null || data.isEmpty()) {
+            // Si Deezer no encuentra nada, devolvemos igual con lo que tenemos
+            log.warn("Deezer no encontró resultados para: {} - {}", cancion.getNombre(), cancion.getArtista());
+            CancionDTO dto = new CancionDTO();
+            dto.setNombre(cancion.getNombre());
+            dto.setArtista(cancion.getArtista());
+            dto.setPista1("El artista es: " + cancion.getArtista());
+            dto.setPista2("No se encontró info del álbum");
+            dto.setPista3("No se encontró la fecha");
+            dto.setLogo("");
+            dto.setPreview("");
+            return List.of(dto);
+        }
+
+        JSONObject track = data.getJSONObject(0);
+
+        // 3) Armar DTO con pistas
+        CancionDTO dto = new CancionDTO();
+        dto.setNombre(cancion.getNombre());
+        dto.setArtista(cancion.getArtista());
+
+        // Pistas para el juego (no revelan el nombre directamente)
+        JSONObject artist = track.getJSONObject("artist");
+        dto.setPista1("El artista es: " + artist.getString("name"));
+
+        JSONObject album = track.getJSONObject("album");
+        dto.setPista2("Pertenece al álbum: " + album.getString("title"));
+
+        // Deezer no siempre da fecha de lanzamiento en /search, así que la pedimos al endpoint del track
+        String trackId = String.valueOf(track.getInt("id"));
+        dto.setPista3(obtenerFechaLanzamiento(trackId));
+
+        dto.setLogo(album.optString("cover_big", ""));
+        dto.setPreview(track.optString("preview", ""));
+
+        return List.of(dto);
+    }
+
+    /**
+     * Consulta el endpoint de track individual de Deezer para obtener la fecha de lanzamiento.
+     */
+    private String obtenerFechaLanzamiento(String trackId) {
+        try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
+                    .uri(URI.create(deezerUrl + "/track/" + trackId))
                     .GET()
                     .build();
 
             HttpResponse<String> response = HttpClient.newHttpClient()
                     .send(request, HttpResponse.BodyHandlers.ofString());
 
-            json = new JSONObject(response.body());
-
-            // Si no existe el rank seguimos buscando
-            if (!json.has("rank")) {
-                continue;
-            }
-
-            rank = json.getInt("rank");
-
-            // Si cumple la condición cortamos el loop
-            if (rank <= 1000) {
-                break;
-            }
+            JSONObject json = new JSONObject(response.body());
+            String fecha = json.optString("release_date", "");
+            return fecha.isEmpty() ? "Fecha desconocida" : "Año de lanzamiento: " + fecha.substring(0, 4);
+        } catch (Exception e) {
+            log.warn("No se pudo obtener fecha de lanzamiento para track {}", trackId);
+            return "Fecha desconocida";
         }
-
-        EquipoDTO dto = new EquipoDTO();
-
-        dto.setId(json.getInt("id"));
-
-        dto.setNombre("Respuesta correcta: " + json.getString("title"));
-
-        JSONObject artistObj = json.getJSONObject("artist");
-        dto.setPista1("La canción es de " + artistObj.getString("name"));
-
-        JSONObject albumObj = json.getJSONObject("album");
-        dto.setPista2("Es del álbum  " + albumObj.getString("title"));
-
-        dto.setPista3("El año de lanzamiento fue en " + json.getString("release_date"));
-
-        dto.setLogo(albumObj.getString("cover_big"));
-
-        tracks.add(dto);
-
-        return tracks;
     }
 }
