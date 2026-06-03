@@ -21,17 +21,22 @@ public class PeliculaService {
             "https://www.omdbapi.com/?apikey=" + API_KEY + "&i=";
 
     private static final int MIN_VOTOS = 100000;
+    private static final int MAX_INTENTOS = 500;
 
     public List<PeliculaDTO> obtenerPeliculaRandom() throws Exception {
 
         JSONObject json = null;
+        int intentos = 0;
 
-        while (true) {
+        while (intentos < MAX_INTENTOS) {
+
+            intentos++;
 
             String imdbId = String.format(
                     "tt%07d",
                     ThreadLocalRandom.current()
-                            .nextInt(1, 9999999));
+                            .nextInt(2000000, 9000000)
+            );
 
             String url = BASE_URL + imdbId;
 
@@ -47,44 +52,59 @@ public class PeliculaService {
 
             json = new JSONObject(response.body());
 
-           
+            // No existe
             if (!json.optString("Response").equals("True")) {
                 continue;
             }
 
-          
+            // No es una película
             if (!"movie".equalsIgnoreCase(json.optString("Type"))) {
                 continue;
             }
 
-           
             String votosStr = json.optString("imdbVotes", "0");
 
             int votos = Integer.parseInt(
                     votosStr.replace(",", "")
             );
 
-        
+            // Tiene suficientes votos
             if (votos >= MIN_VOTOS) {
                 break;
             }
         }
 
+        if (json == null ||
+            !json.optString("Response").equals("True")) {
+
+            throw new RuntimeException(
+                    "No se encontró una película válida después de "
+                    + MAX_INTENTOS + " intentos."
+            );
+        }
+
         PeliculaDTO dto = new PeliculaDTO();
 
         dto.setId(0);
-        dto.setNombre(json.getString("Title"));
+
+        dto.setNombre(
+                json.optString("Title", "Desconocido")
+        );
 
         dto.setGenero(
-                json.optString("Genre", "Sin género")
+                json.optString("Genre", "Desconocido")
         );
 
-        dto.setAño(
-                Integer.parseInt(
-                        json.getString("Year")
-                                .replaceAll("[^0-9]", "")
-                )
-        );
+        try {
+            dto.setAño(
+                    Integer.parseInt(
+                            json.optString("Year", "0")
+                                    .replaceAll("[^0-9]", "")
+                    )
+            );
+        } catch (Exception e) {
+            dto.setAño(0);
+        }
 
         dto.setPoster(
                 json.optString("Poster", "")
