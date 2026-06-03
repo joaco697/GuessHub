@@ -20,6 +20,8 @@ public class PeliculaService {
     private static final String BASE_URL =
             "https://www.omdbapi.com/?apikey=" + API_KEY + "&i=";
 
+    private static final int MIN_VOTOS = 100000;
+
     public List<PeliculaDTO> obtenerPeliculaRandom() throws Exception {
 
         JSONObject json = null;
@@ -45,7 +47,25 @@ public class PeliculaService {
 
             json = new JSONObject(response.body());
 
-            if (json.optString("Response").equals("True")) {
+           
+            if (!json.optString("Response").equals("True")) {
+                continue;
+            }
+
+          
+            if (!"movie".equalsIgnoreCase(json.optString("Type"))) {
+                continue;
+            }
+
+           
+            String votosStr = json.optString("imdbVotes", "0");
+
+            int votos = Integer.parseInt(
+                    votosStr.replace(",", "")
+            );
+
+        
+            if (votos >= MIN_VOTOS) {
                 break;
             }
         }
@@ -54,7 +74,11 @@ public class PeliculaService {
 
         dto.setId(0);
         dto.setNombre(json.getString("Title"));
-        dto.setGenero(json.getString("Genre"));
+
+        dto.setGenero(
+                json.optString("Genre", "Sin género")
+        );
+
         dto.setAño(
                 Integer.parseInt(
                         json.getString("Year")
@@ -62,12 +86,13 @@ public class PeliculaService {
                 )
         );
 
-        dto.setPoster(json.getString("Poster"));
+        dto.setPoster(
+                json.optString("Poster", "")
+        );
 
-        dto.setDirector("Director: " +
-                json.optString("Director"));
-
-
+        dto.setDirector(
+                json.optString("Director", "Desconocido")
+        );
 
         List<PeliculaDTO> peliculas = new ArrayList<>();
         peliculas.add(dto);
