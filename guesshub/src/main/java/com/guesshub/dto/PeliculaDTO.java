@@ -1,16 +1,20 @@
 package com.guesshub.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PeliculaDTO {
+    private Long id;
     private String titulo;
-    private String pista1;   // género
-    private String pista2;   // director
-    private String pista3;   // año
-    private String poster;   // URL del poster
-    private String sinopsis; // para pista extra si se quiere
+    private String pista1;
+    private String pista2;
+    private String pista3;
+    private String poster;
+    private String sinopsis;
 }
