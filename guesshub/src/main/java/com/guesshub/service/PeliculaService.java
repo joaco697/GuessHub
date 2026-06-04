@@ -1,122 +1,87 @@
 package com.guesshub.service;
 
+import com.guesshub.dto.PeliculaDTO;
+import com.guesshub.entity.Pelicula;
+import com.guesshub.repository.PeliculaRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
-import org.json.JSONObject;
-import org.springframework.stereotype.Service;
-
-import com.guesshub.dto.PeliculaDTO;
-
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class PeliculaService {
 
-    private static final String API_KEY = "d8c63221";
-    private static final String BASE_URL =
-            "https://www.omdbapi.com/?apikey=" + API_KEY + "&i=";
+    private final PeliculaRepository peliculaRepository;
 
-    private static final int MIN_VOTOS = 100000;
-    private static final int MAX_INTENTOS = 500;
+    @Value("${omdb.api.key}")
+    private String omdbApiKey;
 
+    @Value("${omdb.api.url}")
+    private String omdbApiUrl;
+
+    /**
+     * 1. Obtiene una película aleatoria de la BD (sincronizada desde TMDB)
+     * 2. La busca en OMDB para obtener director, género, año y poster
+     * 3. Devuelve el DTO con pistas para el juego
+     */
     public List<PeliculaDTO> obtenerPeliculaRandom() throws Exception {
 
-        JSONObject json = null;
-        int intentos = 0;
+        Pelicula pelicula = peliculaRepository.findRandom()
+                .orElseThrow(() -> new RuntimeException(
+                        "No hay películas en la base de datos. Hacé sync primero: POST /api/admin/sync-peliculas"));
 
-        while (intentos < MAX_INTENTOS) {
+        // Buscar en OMDB por título original (mejor coincidencia)
+        String query = URLEncoder.encode(pelicula.getTituloOriginal(), StandardCharsets.UTF_8);
+        String url = omdbApiUrl + "?apikey=" + omdbApiKey + "&t=" + query + "&type=movie";
 
-            intentos++;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
 
-            String imdbId = String.format(
-                    "tt%07d",
-                    ThreadLocalRandom.current()
-                            .nextInt(2000000, 9000000)
-            );
+        HttpResponse<String> response = HttpClient.newHttpClient()
+                .send(request, HttpResponse.BodyHandlers.ofString());
 
-            String url = BASE_URL + imdbId;
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .GET()
-                    .build();
-
-            HttpResponse<String> response =
-                    HttpClient.newHttpClient()
-                            .send(request,
-                                    HttpResponse.BodyHandlers.ofString());
-
-            json = new JSONObject(response.body());
-
-            // No existe
-            if (!json.optString("Response").equals("True")) {
-                continue;
-            }
-
-            // No es una película
-            if (!"movie".equalsIgnoreCase(json.optString("Type"))) {
-                continue;
-            }
-
-            String votosStr = json.optString("imdbVotes", "0");
-
-            int votos = Integer.parseInt(
-                    votosStr.replace(",", "")
-            );
-
-            // Tiene suficientes votos
-            if (votos >= MIN_VOTOS) {
-                break;
-            }
-        }
-
-        if (json == null ||
-            !json.optString("Response").equals("True")) {
-
-            throw new RuntimeException(
-                    "No se encontró una película válida después de "
-                    + MAX_INTENTOS + " intentos."
-            );
-        }
+        JSONObject json = new JSONObject(response.body());
 
         PeliculaDTO dto = new PeliculaDTO();
+        dto.setTitulo(pelicula.getTitulo());
 
-        dto.setId(0);
-
-        dto.setNombre(
-                json.optString("Title", "Desconocido")
-        );
-
-        dto.setGenero(
-                json.optString("Genre", "Desconocido")
-        );
-
-        try {
-            dto.setAño(
-                    Integer.parseInt(
-                            json.optString("Year", "0")
-                                    .replaceAll("[^0-9]", "")
-                    )
-            );
-        } catch (Exception e) {
-            dto.setAño(0);
+        if (!"True".equals(json.optString("Response"))) {
+            // OMDB no encontró nada, devolvemos con lo mínimo
+            log.warn("OMDB no encontró: {}", pelicula.getTituloOriginal());
+            dto.setPista1("Género desconocido");
+            dto.setPista2("Director desconocido");
+            dto.setPista3("Año desconocido");
+            dto.setPoster("");
+            dto.setSinopsis("");
+            return List.of(dto);
         }
 
-        dto.setPoster(
-                json.optString("Poster", "")
-        );
+        // Pistas para el juego
+        String genero   = json.optString("Genre",    "Género desconocido");
+        String director = json.optString("Director", "Director desconocido");
+        String anio     = json.optString("Year",     "Año desconocido");
+        String poster   = json.optString("Poster",   "");
+        String sinopsis = json.optString("Plot",     "");
 
-        dto.setDirector(
-                json.optString("Director", "Desconocido")
-        );
+        dto.setPista1("Género: " + genero);
+        dto.setPista2("Director: " + director);
+        dto.setPista3("Año: " + anio);
+        dto.setPoster(poster);
+        dto.setSinopsis(sinopsis);
 
-        List<PeliculaDTO> peliculas = new ArrayList<>();
-        peliculas.add(dto);
-
-        return peliculas;
+        return List.of(dto);
     }
 }

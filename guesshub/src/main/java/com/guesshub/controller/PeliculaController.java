@@ -1,39 +1,35 @@
 package com.guesshub.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.guesshub.dto.PeliculaDTO;
 import com.guesshub.service.PeliculaService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/pelicula")
+@RequestMapping("/api")
+@RequiredArgsConstructor
 public class PeliculaController {
 
-    @Autowired
-    private PeliculaService peliculaService;
+    private final PeliculaService peliculaService;
 
-    /** http://localhost:8080/pelicula/random */
-    @GetMapping("/random")
+    /**
+     * GET /api/pelicula/random
+     * Devuelve una película aleatoria de la BD buscada en OMDB.
+     */
+    @GetMapping("/pelicula/random")
     public ResponseEntity<List<PeliculaDTO>> obtenerPeliculaRandom() {
-
         try {
-
-            List<PeliculaDTO> peliculaes = peliculaService.obtenerPeliculaRandom();
-
-            if (peliculaes.isEmpty()) {
+            List<PeliculaDTO> peliculas = peliculaService.obtenerPeliculaRandom();
+            if (peliculas.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
-
-            return ResponseEntity.ok(peliculaes);
-
+            return ResponseEntity.ok(peliculas);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }

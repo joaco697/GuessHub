@@ -1,15 +1,11 @@
 package com.guesshub.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
-@Table(name = "peliculas")
+@Table(name = "peliculas",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"titulo_original"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,14 +13,17 @@ import lombok.AllArgsConstructor;
 public class Pelicula {
 
     @Id
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String nombre;
-    private String genero;
-    private int año;
-    private String poster;
+    @Column(nullable = false)
+    private String titulo;
 
-    public Pelicula(String nombre) {
-        this.nombre = nombre;
+    @Column(name = "titulo_original")
+    private String tituloOriginal;
+
+    public Pelicula(String titulo, String tituloOriginal) {
+        this.titulo = titulo;
+        this.tituloOriginal = tituloOriginal;
     }
 }
