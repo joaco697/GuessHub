@@ -61,7 +61,10 @@
 
         <div class="game-card-header">
           <div class="game-card-title" id="game-mode-title">🎬 ¿Qué es?</div>
-          <span class="pill pill-green" id="game-mode-badge">Cargando...</span>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <span class="pill pill-green" id="timer-badge">🕐 <span id="timer-val">60</span>s</span>
+            <span class="pill pill-green" id="game-mode-badge">Cargando...</span>
+          </div>
         </div>
 
 
@@ -117,9 +120,12 @@
 
 <script>
   // ── Estado ────────────────────────────────────────────────────
-  let preguntaActual = null;  // { id, tipo: 'pelicula'|'cancion', pista1, pista2, pista3, imagen }
-  let pistasReveladas = 1;    // cuántas pistas se mostraron (máximo 3)
-  let modoActual = 'pelicula'; // alterna entre 'pelicula' y 'cancion'
+  let preguntaActual = null;
+  let pistasReveladas = 1;
+  let modoActual = 'pelicula';
+  let timerInterval = null;
+  let segundosUsados = 0;
+  const TIEMPO_MAX = 60;
 
   function getToken()    { return localStorage.getItem('token'); }
   function getUsername() { return localStorage.getItem('username'); }
@@ -223,15 +229,76 @@
       // Mostrar pista 1 y habilitar botón pista 2
       agregarPista(preguntaActual.pista1);
       document.getElementById('btn-pista2').classList.remove('hidden');
+      iniciarTimer();
 
     } catch (e) {
       showToast('Error de conexión', 'error');
     }
   }
 
-  // ── Pistas progresivas (máximo 3, cada una deshabilita la anterior) ──
+  // ── Timer ─────────────────────────────────────────────────────
+  function iniciarTimer() {
+    clearInterval(timerInterval);
+    segundosUsados = 0;
+    actualizarTimer(TIEMPO_MAX);
+    timerInterval = setInterval(() => {
+      segundosUsados++;
+      const restantes = TIEMPO_MAX - segundosUsados;
+      actualizarTimer(restantes);
+      if (restantes <= 0) {
+        clearInterval(timerInterval);
+        // Tiempo agotado — derrota automática
+        document.getElementById('answer-input').disabled = true;
+        document.getElementById('btn-enviar').disabled = true;
+        document.getElementById('btn-pista2').classList.add('hidden');
+        document.getElementById('btn-pista3').classList.add('hidden');
+        guardarPartida(false);
+        setTimeout(() => mostrarResultado(false, preguntaActual
+          ? (preguntaActual.tipo === 'pelicula' ? '(tiempo agotado)' : preguntaActual.nombre)
+          : '(tiempo agotado)'), 400);
+      }
+    }, 1000);
+  }
+
+  function actualizarTimer(restantes) {
+    document.getElementById('timer-val').textContent = restantes;
+    const badge = document.getElementById('timer-badge');
+    if (restantes <= 10) {
+      badge.style.background = 'var(--red)';
+    } else if (restantes <= 20) {
+      badge.style.background = 'var(--yellow)';
+    } else {
+      badge.style.background = '';
+      badge.className = 'pill pill-green';
+    }
+  }
+
+  function detenerTimer() {
+    clearInterval(timerInterval);
+  }
+
+  // ── Guardar partida en backend ────────────────────────────────
+  async function guardarPartida(correcto) {
+    try {
+      await fetch('/api/partida', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({
+          correcto,
+          pistasUsadas: pistasReveladas,
+          segundosUsados
+        })
+      });
+    } catch (e) {
+      console.error('Error guardando partida', e);
+    }
+  }
+
+
   document.getElementById('btn-pista2').addEventListener('click', () => {
-    if (pistasReveladas >= 2) return;
     agregarPista(preguntaActual.pista2);
     pistasReveladas = 2;
     document.getElementById('btn-pista2').classList.add('hidden');
@@ -239,11 +306,9 @@
   });
 
   document.getElementById('btn-pista3').addEventListener('click', () => {
-    if (pistasReveladas >= 3) return;
     agregarPista(preguntaActual.pista3);
     pistasReveladas = 3;
     document.getElementById('btn-pista3').classList.add('hidden');
-    // No hay más pistas
     showToast('No hay más pistas disponibles', '');
   });
 
@@ -269,6 +334,7 @@
 
     document.getElementById('btn-enviar').disabled = true;
     document.getElementById('answer-input').disabled = true;
+    detenerTimer();
 
     try {
       let resultado;
@@ -286,8 +352,7 @@
         const correcto = normalizar(respuesta) === normalizar(preguntaActual.nombre);
         resultado = {
           correcto,
-          tituloCorrecto: preguntaActual.nombre,
-          mensaje: correcto ? '¡Correcto!' : 'Incorrecto'
+          tituloCorrecto: preguntaActual.nombre
         };
       }
 
@@ -295,21 +360,18 @@
 
       if (resultado.correcto) {
         input.classList.add('state-correct');
-        setTimeout(() => mostrarResultado(resultado), 400);
+        await guardarPartida(true);
+        setTimeout(() => mostrarResultado(true, resultado.tituloCorrecto), 400);
       } else {
         input.classList.add('state-wrong');
         const card = document.getElementById('game-card');
         card.classList.remove('anim-shake');
         void card.offsetWidth;
         card.classList.add('anim-shake');
-        showToast('Incorrecto, intentá de nuevo', 'error');
-        setTimeout(() => {
-          input.classList.remove('state-wrong');
-          input.disabled = false;
-          document.getElementById('btn-enviar').disabled = false;
-          input.value = '';
-          input.focus();
-        }, 800);
+        document.getElementById('btn-pista2').classList.add('hidden');
+        document.getElementById('btn-pista3').classList.add('hidden');
+        await guardarPartida(false);
+        setTimeout(() => mostrarResultado(false, resultado.tituloCorrecto), 800);
       }
 
     } catch (e) {
@@ -320,10 +382,10 @@
   }
 
   // ── Modal resultado ───────────────────────────────────────────
-  function mostrarResultado(resultado) {
-    document.getElementById('modal-icon').textContent   = '🎉';
-    document.getElementById('modal-title').textContent  = '¡Correcto!';
-    document.getElementById('modal-answer').textContent = resultado.tituloCorrecto;
+  function mostrarResultado(correcto, tituloCorrecto) {
+    document.getElementById('modal-icon').textContent   = correcto ? '🎉' : '😔';
+    document.getElementById('modal-title').textContent  = correcto ? '¡Correcto!' : '¡Incorrecto!';
+    document.getElementById('modal-answer').textContent = tituloCorrecto;
     document.getElementById('modal-result').classList.remove('hidden');
   }
 

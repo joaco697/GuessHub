@@ -12,55 +12,33 @@
 
 <div class="phone-frame">
 
-  <!-- ── NAVBAR ─────────────────────────────────────────────── -->
   <nav class="navbar">
     <div class="nav-logo">
       <span>🏆</span>
       Guess<span class="logo-green">Hub</span>
     </div>
     <div class="nav-right">
-      <button class="btn-ingresar" id="btn-ingresar">Ingresar</button>
-      <button class="avatar-btn" onclick="location.href='perfil.html'">👤</button>
+      <button class="avatar-btn" onclick="location.href='/perfil'">👤</button>
     </div>
   </nav>
 
-  <!-- ── SCREEN ─────────────────────────────────────────────── -->
   <div class="screen">
     <div class="page-inner">
 
-      <!-- Filter tabs -->
-      <!-- data-filter es el valor que se manda a la API -->
-      <div style="display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.25rem" id="filter-tabs">
-        <button class="tab-btn active" data-filter="GLOBAL"    onclick="setFilter(this)">🌍 Global</button>
-        <button class="tab-btn"        data-filter="PELICULAS" onclick="setFilter(this)">🎬 Películas</button>
-        <button class="tab-btn"        data-filter="MUSICA"    onclick="setFilter(this)">🎵 Música</button>
-        <button class="tab-btn"        data-filter="DEPORTES"  onclick="setFilter(this)">⚽ Deportes</button>
-        <button class="tab-btn"        data-filter="RANDOM"    onclick="setFilter(this)">🎲 Random</button>
-      </div>
+      <div class="section-title"><span>🏆</span> Ranking Global</div>
 
-      <!-- Ranking card -->
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:1rem">
-          <span style="font-size:1.3rem">🏆</span>
-          <span style="font-weight:900;font-size:1.1rem" id="ranking-title">Ranking Global</span>
+      <div class="card" id="ranking-card">
+        <div id="ranking-list" style="display:flex;flex-direction:column;gap:.3rem">
+          <div style="text-align:center;color:var(--text-light);padding:2rem">Cargando...</div>
         </div>
-        <!-- renderizado por renderRanking(players) -->
-        <div id="ranking-list"></div>
-      </div>
-
-      <!-- Logros -->
-      <div class="section-title"><span>🏅</span> Logros</div>
-      <div class="achievements-scroll" id="logros-ranking">
-        <!-- renderizado por renderLogros(achievements) -->
       </div>
 
       <div style="height:.5rem"></div>
     </div>
   </div>
 
-  <!-- ── BOTTOM NAV ──────────────────────────────────────────── -->
   <nav class="bottom-nav">
-    <button class="bn-item" onclick="location.href='index.html'">
+    <button class="bn-item" onclick="location.href='/'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       Inicio
     </button>
@@ -68,126 +46,72 @@
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 20h2V8H7v12zm2-18H7v2h2V2zm4 18h2V4h-2v16zm6 0h2v-8h-2v8zm0-10h2V8h-2v2z"/></svg>
       Ranking
     </button>
-    <button class="bn-item" onclick="location.href='game.html'">
+    <button class="bn-item" onclick="location.href='/game'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       Jugar
     </button>
-    <button class="bn-item" onclick="location.href='perfil.html'">
+    <button class="bn-item" onclick="location.href='/perfil'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
       Perfil
     </button>
   </nav>
 
-</div><!-- /phone-frame -->
+</div>
 
 <script>
-/* =============================================================
-   ranking.js — SOLO ANIMACIONES Y RENDER
-   ============================================================= */
-
-const FILTER_LABELS = {
-  GLOBAL:    '🌍 Ranking Global',
-  PELICULAS: '🎬 Ranking Películas',
-  MUSICA:    '🎵 Ranking Música',
-  DEPORTES:  '⚽ Ranking Deportes',
-  RANDOM:    '🎲 Ranking Random',
-};
-
-let activeFilter = 'GLOBAL';
-
-// ── setFilter: maneja el tab activo y pide datos a la API ─────
-function setFilter(btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  activeFilter = btn.dataset.filter;
-  document.getElementById('ranking-title').textContent = FILTER_LABELS[activeFilter] || 'Ranking';
-  // TODO: loadRanking(activeFilter);
-}
-
-// ── renderRanking(players) ────────────────────────────────────
-// Llamar con datos de GET /api/ranking?category=GLOBAL&limit=10
-// players: [{ name, score, emoji, trend, isMe }]
-function renderRanking(players) {
+  const myUsername = localStorage.getItem('username') || '';
+  const medals = ['🥇','🥈','🥉'];
   const circles = ['c1','c2','c3','cn','cn','cn','cn','cn','cn','cn'];
-  const container = document.getElementById('ranking-list');
-  container.innerHTML = '';
-  players.forEach((p, i) => {
-    const trendHtml = p.trend === 'UP'
-      ? '<span class="lb-trend up">↗</span>'
-      : p.trend === 'DOWN'
-        ? '<span class="lb-trend down">↙</span>'
-        : '<span class="lb-trend"></span>';
-    const row = document.createElement('div');
-    row.className = 'lb-row anim-fade-up' + (i < 3 ? ' top3' : '');
-    row.style.cssText = `margin-bottom:.3rem; animation-delay:${i * 0.04}s`;
-    row.innerHTML = `
-      <div class="lb-num-circle ${circles[i] || 'cn'}">${i + 1}</div>
-      <span class="lb-emoji">${p.emoji || '👤'}</span>
-      <span class="lb-name" style="${p.isMe ? 'color:var(--green);font-weight:900' : ''}">${p.name}</span>
-      <span class="lb-score">${Number(p.score).toLocaleString()}</span>
-      ${trendHtml}
-    `;
-    container.appendChild(row);
-  });
-}
 
-// ── renderLogros(achievements) ────────────────────────────────
-// achievements: [{ icon, name, unlocked }]
-function renderLogros(achievements) {
-  const container = document.getElementById('logros-ranking');
-  container.innerHTML = '';
-  achievements.forEach((a, i) => {
-    const div = document.createElement('div');
-    div.className = 'ach-item anim-fade-up' + (a.unlocked ? '' : ' locked');
-    div.style.animationDelay = `${i * 0.05}s`;
-    div.innerHTML = `
-      <div class="ach-icon">${a.icon}</div>
-      <div class="ach-name">${a.name}</div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-// ── Toast ─────────────────────────────────────────────────────
-function showToast(msg, type = '') {
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
-  document.getElementById('toast-container').appendChild(t);
-  setTimeout(() => {
-    t.classList.add('removing');
-    setTimeout(() => t.remove(), 260);
-  }, 2600);
-}
-
-/*
-  ── EJEMPLO de integración ─────────────────────────────────────
-
-  async function loadRanking(category) {
+  async function cargarRanking() {
     try {
-      const token = localStorage.getItem('token');
-      const data = await fetch(`/api/ranking?category=${category}&limit=10`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json());
+      const res = await fetch('/api/ranking');
+      if (!res.ok) { showToast('Error al cargar el ranking', 'error'); return; }
+      const data = await res.json();
 
-      renderRanking(data.players);
-    } catch(e) {
-      showToast('Error al cargar ranking', 'error');
+      const container = document.getElementById('ranking-list');
+
+      if (data.length === 0) {
+        container.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:2rem">
+          Todavía no hay jugadores en el ranking.<br>¡Sé el primero!
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      data.forEach((p, i) => {
+        const esYo = p.username === myUsername;
+        const row = document.createElement('div');
+        row.className = 'lb-row' + (i < 3 ? ' top3' : '');
+        row.style.marginBottom = '.3rem';
+        if (esYo) row.style.background = 'rgba(76,175,80,.1)';
+        row.innerHTML = `
+          <div class="lb-num-circle ${circles[i] || 'cn'}">${medals[i] || i + 1}</div>
+          <span class="lb-name" style="${esYo ? 'color:var(--green);font-weight:900' : ''}">
+            ${p.username}${esYo ? ' (vos)' : ''}
+          </span>
+          <div style="text-align:right">
+            <div class="lb-score">${Number(p.puntos).toLocaleString()} pts</div>
+            <div style="font-size:.72rem;color:var(--text-light)">${p.partidasJugadas} partidas</div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+    } catch (e) {
+      showToast('Error de conexión', 'error');
     }
   }
 
-  async function loadLogros() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const profile = await fetch('/api/profile/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json());
-    renderLogros(profile.achievements);
+  function showToast(msg, type = '') {
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => { t.classList.add('removing'); setTimeout(() => t.remove(), 260); }, 2600);
   }
 
-  loadRanking('GLOBAL');
-  loadLogros();
-*/
+  cargarRanking();
 </script>
 
 </body>

@@ -1,5 +1,7 @@
 package com.guesshub.config.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.guesshub.repository.security.UsuarioRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,9 +21,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guesshub.repository.security.UsuarioRepository;
-
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -34,20 +33,34 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Páginas HTML — acceso libre (el login lo maneja el JS)
                         .requestMatchers(HttpMethod.GET, "/", "/game", "/ranking", "/perfil", "/index").permitAll()
+                        // Recursos estáticos
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        // Auth pública
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/equipo/usuarios/registrar").permitAll()
+
+                        // Admin: sync Last.fm y gestión
                         .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
+
+                        // Random y respuesta películas: cualquier usuario autenticado
                         .requestMatchers(HttpMethod.GET, "/api/random").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/pelicula/random").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/pelicula/respuesta").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/partida").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/ranking").permitAll()
+
+                        // Productos y mascotas — solo ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
                         .requestMatchers("/api/mascotas/**").hasRole("ADMIN")
+
+                        // Equipos
                         .requestMatchers(HttpMethod.POST, "/equipo").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/equipo").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/equipo**").hasAnyRole("ADMIN", "CLIENTE")
                         .requestMatchers("/equipo/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
@@ -73,7 +86,7 @@ public class SecurityConfig {
                     "type", "https://http.dev/problems/access-denied",
                     "title", "Acceso denegado",
                     "status", 403,
-                    "detail", "No tenes permisos para acceder a este recurso"));
+                    "detail", "No tenés permisos para acceder a este recurso"));
         };
     }
 
@@ -86,7 +99,7 @@ public class SecurityConfig {
                     "type", "https://http.dev/problems/unauthorized",
                     "title", "No autorizado",
                     "status", 401,
-                    "detail", "Credenciales invalidas o faltantes"));
+                    "detail", "Credenciales inválidas o faltantes"));
         };
     }
 
