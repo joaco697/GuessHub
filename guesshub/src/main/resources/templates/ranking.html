@@ -59,7 +59,7 @@
 </div>
 
 <script>
-  const myUsername = localStorage.getItem('username') || '';
+  const myDisplayName = localStorage.getItem('displayName') || '';
   const medals = ['🥇','🥈','🥉'];
   const circles = ['c1','c2','c3','cn','cn','cn','cn','cn','cn','cn'];
 
@@ -80,7 +80,8 @@
 
       container.innerHTML = '';
       data.forEach((p, i) => {
-        const esYo = p.username === myUsername;
+        // p.username ya viene como displayName desde el backend
+        const esYo = p.username === myDisplayName;
         const row = document.createElement('div');
         row.className = 'lb-row' + (i < 3 ? ' top3' : '');
         row.style.marginBottom = '.3rem';

@@ -12,7 +12,6 @@
 
 <div class="phone-frame">
 
-  <!-- ── NAVBAR ─────────────────────────────────────────────── -->
   <nav class="navbar">
     <div class="nav-logo">
       <span>🏆</span>
@@ -24,53 +23,32 @@
     </div>
   </nav>
 
-  <!-- ── SCREEN ─────────────────────────────────────────────── -->
   <div class="screen">
     <div class="page-inner">
 
       <!-- Desafío del día -->
       <div class="desafio-card">
         <div class="desafio-header">
-          <!-- Streak: valor viene de la API -->
           <span class="streak-chip" id="streak-chip">🔥 <span id="streak-days">–</span> días</span>
           <span style="font-size:1.6rem">👑</span>
         </div>
         <div class="desafio-label">Desafío del día</div>
-        <!-- Título del desafío: viene de la API -->
-        <div class="desafio-title" id="desafio-title">¿Qué película es?</div>
-        <div class="desafio-sub">¡Adivina y sube en el ranking!</div>
+        <div class="desafio-title">¡Adivina películas y canciones!</div>
+        <div class="desafio-sub">Usá las pistas y subí en el ranking</div>
 
         <button class="btn-green" id="btn-jugar-desafio">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           JUGAR AHORA
         </button>
 
-        <!-- Top 3 del día: filas generadas por la API -->
+        <!-- Top 3 -->
         <div class="top3-box">
-          <div class="top3-title"><span>👑</span> Top 3 Hoy</div>
+          <div class="top3-title"><span>👑</span> Top 3 Global</div>
           <div id="top3-list">
-            <!-- Ejemplo de estructura que la API debe llenar:
             <div class="top3-row">
               <span class="top3-medal">🥇</span>
-              <span class="top3-name">NombreJugador</span>
-              <span class="top3-pts">2500</span>
-            </div>
-            -->
-            <!-- Placeholder mientras carga -->
-            <div class="top3-row skeleton-row">
-              <span class="top3-medal">🥇</span>
-              <span class="top3-name" style="color:var(--border)">████████</span>
-              <span class="top3-pts" style="color:var(--border)">████</span>
-            </div>
-            <div class="top3-row skeleton-row">
-              <span class="top3-medal">🥈</span>
-              <span class="top3-name" style="color:var(--border)">████████</span>
-              <span class="top3-pts" style="color:var(--border)">████</span>
-            </div>
-            <div class="top3-row skeleton-row">
-              <span class="top3-medal">🥉</span>
-              <span class="top3-name" style="color:var(--border)">████████</span>
-              <span class="top3-pts" style="color:var(--border)">████</span>
+              <span class="top3-name" style="color:var(--border)">Cargando...</span>
+              <span class="top3-pts" style="color:var(--border)">–</span>
             </div>
           </div>
         </div>
@@ -79,285 +57,143 @@
       <!-- Categorías -->
       <div class="section-title">Categorías</div>
       <div class="cat-grid">
-        <!-- Cada categoría: data-id usado por la API para saber a qué ir -->
-        <div class="cat-card green anim-fade-up" style="animation-delay:.05s" data-category="peliculas" id="cat-peliculas">
+        <div class="cat-card green anim-fade-up" style="animation-delay:.05s" data-category="peliculas">
           <span class="cat-icon-main">🎬</span>
           <span class="cat-icon-bg">🎞️</span>
           <span class="cat-name">Películas</span>
         </div>
-        <div class="cat-card yellow anim-fade-up" style="animation-delay:.1s" data-category="musica" id="cat-musica">
+        <div class="cat-card yellow anim-fade-up" style="animation-delay:.1s" data-category="musica">
           <span class="cat-icon-main">🎵</span>
           <span class="cat-icon-bg">🎶</span>
           <span class="cat-name">Música</span>
         </div>
-        <div class="cat-card green anim-fade-up" style="animation-delay:.15s" data-category="deportes" id="cat-deportes">
+        <div class="cat-card green anim-fade-up" style="animation-delay:.15s" data-category="deportes">
           <span class="cat-icon-main">⚽</span>
           <span class="cat-icon-bg">🏅</span>
           <span class="cat-name">Deportes</span>
         </div>
-        <div class="cat-card yellow anim-fade-up" style="animation-delay:.2s" data-category="random" id="cat-random">
+        <div class="cat-card yellow anim-fade-up" style="animation-delay:.2s" data-category="random">
           <span class="cat-icon-main">🎲</span>
           <span class="cat-icon-bg">🔀</span>
           <span class="cat-name">Random</span>
         </div>
       </div>
 
-      <!-- Ad banner -->
-      <div class="ad-banner">
-        Publicidad<br>
-        <span style="font-size:.72rem;opacity:.6">Banner 320x50</span>
-      </div>
-
-      <!-- Minijuegos Populares -->
-      <!-- La API devuelve la lista; el JS llama a renderMinijuegos(data) -->
-      <div class="section-title">Minijuegos Populares</div>
-      <div id="minijuegos-list" style="display:flex;flex-direction:column;gap:.65rem">
-        <!-- renderizado por renderMinijuegos() -->
-      </div>
-
-      <!-- Ranking Global (resumen) -->
+      <!-- Ranking Global -->
       <div class="section-title"><span>🏆</span> Ranking Global</div>
       <div class="card" id="ranking-home">
-        <!-- renderizado por renderRankingHome() -->
+        <div style="text-align:center;color:var(--text-light);padding:1rem">Cargando...</div>
       </div>
 
       <!-- Logros -->
       <div class="section-title"><span>🏅</span> Logros</div>
       <div class="achievements-scroll" id="logros-home">
-        <!-- renderizado por renderLogros() -->
+        <div class="ach-item"><div class="ach-icon">🎬</div><div class="ach-name">Cinéfilo</div></div>
+        <div class="ach-item"><div class="ach-icon">🎵</div><div class="ach-name">Melómano</div></div>
+        <div class="ach-item locked"><div class="ach-icon">🏆</div><div class="ach-name">Top 10</div></div>
+        <div class="ach-item locked"><div class="ach-icon">🔥</div><div class="ach-name">Racha x5</div></div>
+        <div class="ach-item locked"><div class="ach-icon">⚡</div><div class="ach-name">Velocista</div></div>
       </div>
 
       <div style="height:.5rem"></div>
     </div>
   </div>
 
-  <!-- ── BOTTOM NAV ──────────────────────────────────────────── -->
   <nav class="bottom-nav">
-    <button class="bn-item active" onclick="location.href='index.html'">
+    <button class="bn-item active" onclick="location.href='/'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       Inicio
     </button>
-    <button class="bn-item" onclick="location.href='ranking.html'">
+    <button class="bn-item" onclick="location.href='/ranking'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 20h2V8H7v12zm2-18H7v2h2V2zm4 18h2V4h-2v16zm6 0h2v-8h-2v8zm0-10h2V8h-2v2z"/></svg>
       Ranking
     </button>
-    <button class="bn-item" onclick="location.href='game.html'">
+    <button class="bn-item" onclick="location.href='/game'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       Jugar
     </button>
-    <button class="bn-item" onclick="location.href='perfil.html'">
+    <button class="bn-item" onclick="location.href='/perfil'">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
       Perfil
     </button>
   </nav>
 
-</div><!-- /phone-frame -->
+</div>
 
 <script>
-/* =============================================================
-   index.js — SOLO ANIMACIONES Y RENDER DE DATOS DE LA API
-   =============================================================
-   Toda la lógica de negocio (auth, puntaje, validación) va
-   en Spring Boot. Este archivo solo:
-     1. Renderiza datos que lleguen de la API
-     2. Maneja animaciones y transiciones visuales
-     3. Navega a otras páginas
-   ============================================================= */
-
-// ── Navegación desde categorías ───────────────────────────────
-// Cuando el backend esté listo, estos botones harán fetch primero
-// y luego navegarán con el gameId como query param.
-document.querySelectorAll('.cat-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const category = card.dataset.category;
-    // TODO: location.href = `game.html?category=${category}`;
-    location.href = 'game.html';
-  });
-});
-
-document.getElementById('btn-jugar-desafio').addEventListener('click', () => {
-  // TODO: location.href = `game.html?mode=daily`;
-  location.href = 'game.html';
-});
-
-document.getElementById('btn-avatar').addEventListener('click', () => {
-  location.href = 'perfil.html';
-});
-
-// ── renderTop3(players) ───────────────────────────────────────
-// Llamar con el array que devuelve GET /api/ranking/daily?limit=3
-// players: [{ name, score }]
-function renderTop3(players) {
   const medals = ['🥇','🥈','🥉'];
-  const container = document.getElementById('top3-list');
-  container.innerHTML = '';
-  players.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'top3-row anim-fade-up';
-    div.style.animationDelay = `${i * 0.06}s`;
-    div.innerHTML = `
-      <span class="top3-medal">${medals[i]}</span>
-      <span class="top3-name">${p.name}</span>
-      <span class="top3-pts">${p.score.toLocaleString()}</span>
-    `;
-    container.appendChild(div);
-  });
-}
-
-// ── renderStreak(days) ────────────────────────────────────────
-// Llamar con el número de días de racha del usuario autenticado
-// GET /api/profile/me → user.streakDays
-function renderStreak(days) {
-  document.getElementById('streak-days').textContent = days;
-  if (days >= 7) {
-    document.getElementById('streak-chip').classList.add('anim-pop');
-  }
-}
-
-// ── renderDesafioTitle(title) ─────────────────────────────────
-// Llamar con el título del desafío diario
-// GET /api/games/daily → game.title
-function renderDesafioTitle(title) {
-  const el = document.getElementById('desafio-title');
-  el.textContent = title;
-  el.classList.add('anim-pop');
-}
-
-// ── renderMinijuegos(games) ───────────────────────────────────
-// Llamar con el array de juegos populares
-// GET /api/games?sort=popular&limit=4
-// games: [{ id, title, description, playerCount, avgTime, difficulty }]
-function renderMinijuegos(games) {
-  const diffTag = { EASY:'tag-easy', MEDIUM:'tag-medium', HARD:'tag-hard' };
-  const diffLabel = { EASY:'EASY', MEDIUM:'MEDIUM', HARD:'HARD' };
-  const icons = { EASY:'🎬', MEDIUM:'🎵', HARD:'⚽' };
-
-  const container = document.getElementById('minijuegos-list');
-  container.innerHTML = '';
-  games.forEach((g, i) => {
-    const card = document.createElement('div');
-    card.className = 'minijuego-card anim-fade-up';
-    card.style.animationDelay = `${i * 0.07}s`;
-    card.innerHTML = `
-      <div style="flex:1">
-        <div class="mj-title">${g.title}</div>
-        <div class="mj-desc">${g.description}</div>
-        <div class="mj-meta">
-          <span>👥 ${Number(g.playerCount).toLocaleString()}</span>
-          <span>🕐 ${g.avgTime}</span>
-          <span>🏆</span>
-        </div>
-      </div>
-      <div style="flex-shrink:0">
-        <span class="${diffTag[g.difficulty] || 'tag-medium'}">${diffLabel[g.difficulty] || g.difficulty}</span>
-      </div>
-    `;
-    card.addEventListener('click', () => {
-      // TODO: location.href = `game.html?id=${g.id}`;
-      location.href = 'game.html';
-    });
-    container.appendChild(card);
-  });
-}
-
-// ── renderRankingHome(players) ────────────────────────────────
-// Llamar con el top 10 global
-// GET /api/ranking/global?limit=10
-// players: [{ name, score, emoji, trend }]  trend: 'UP' | 'DOWN' | null
-function renderRankingHome(players) {
   const circles = ['c1','c2','c3','cn','cn','cn','cn','cn','cn','cn'];
-  const container = document.getElementById('ranking-home');
-  container.innerHTML = '';
-  players.forEach((p, i) => {
-    const trendHtml = p.trend === 'UP'
-      ? '<span class="lb-trend up">↗</span>'
-      : p.trend === 'DOWN'
-        ? '<span class="lb-trend down">↙</span>'
-        : '<span class="lb-trend"></span>';
-    const row = document.createElement('div');
-    row.className = 'lb-row' + (i < 3 ? ' top3' : '');
-    row.style.marginBottom = '.3rem';
-    row.innerHTML = `
-      <div class="lb-num-circle ${circles[i]}">${i + 1}</div>
-      <span class="lb-emoji">${p.emoji || '👤'}</span>
-      <span class="lb-name">${p.name}</span>
-      <span class="lb-score">${Number(p.score).toLocaleString()}</span>
-      ${trendHtml}
-    `;
-    container.appendChild(row);
+
+  // ── Navegación ────────────────────────────────────────────────
+  document.querySelectorAll('.cat-card').forEach(card => {
+    card.addEventListener('click', () => location.href = '/game');
   });
-}
+  document.getElementById('btn-jugar-desafio').addEventListener('click', () => location.href = '/game');
+  document.getElementById('btn-avatar').addEventListener('click', () => location.href = '/perfil');
 
-// ── renderLogros(achievements) ────────────────────────────────
-// Llamar con los logros del usuario
-// GET /api/profile/me → user.achievements
-// achievements: [{ icon, name, unlocked }]
-function renderLogros(achievements) {
-  const container = document.getElementById('logros-home');
-  container.innerHTML = '';
-  achievements.forEach((a, i) => {
-    const div = document.createElement('div');
-    div.className = 'ach-item anim-fade-up' + (a.unlocked ? '' : ' locked');
-    div.style.animationDelay = `${i * 0.05}s`;
-    div.innerHTML = `
-      <div class="ach-icon">${a.icon}</div>
-      <div class="ach-name">${a.name}</div>
-    `;
-    container.appendChild(div);
-  });
-}
+  // Mostrar nombre si está logueado
+  const displayName = localStorage.getItem('displayName');
+  if (displayName) {
+    document.getElementById('btn-ingresar').textContent = '👤 ' + displayName;
+    document.getElementById('btn-ingresar').onclick = () => location.href = '/perfil';
+  } else {
+    document.getElementById('btn-ingresar').onclick = () => location.href = '/game';
+  }
 
-// ── Toast helper ──────────────────────────────────────────────
-// Usar para mostrar errores de red, mensajes de la API, etc.
-function showToast(msg, type = '') {
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
-  document.getElementById('toast-container').appendChild(t);
-  setTimeout(() => {
-    t.classList.add('removing');
-    setTimeout(() => t.remove(), 260);
-  }, 2600);
-}
-
-// ── setLoading(bool) ──────────────────────────────────────────
-// Mostrar/ocultar estado de carga en el botón principal
-function setLoading(on) {
-  const btn = document.getElementById('btn-jugar-desafio');
-  btn.disabled = on;
-  btn.innerHTML = on
-    ? '<span style="opacity:.7">Cargando…</span>'
-    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> JUGAR AHORA';
-}
-
-/*
-  ── EJEMPLO de cómo llamarías a la API cuando esté lista ───────
-
-  async function loadHome() {
-    setLoading(true);
+  // ── Cargar ranking desde la API ───────────────────────────────
+  async function cargarRankingHome() {
     try {
-      const [daily, ranking, games, profile] = await Promise.all([
-        fetch('/api/games/daily').then(r => r.json()),
-        fetch('/api/ranking/global?limit=10').then(r => r.json()),
-        fetch('/api/games?sort=popular&limit=4').then(r => r.json()),
-        fetch('/api/profile/me', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }).then(r => r.json()),
-      ]);
-      renderDesafioTitle(daily.title);
-      renderTop3(daily.top3);
-      renderRankingHome(ranking);
-      renderMinijuegos(games);
-      renderLogros(profile.achievements);
-      renderStreak(profile.streakDays);
+      const res = await fetch('/api/ranking');
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Top 3 en la card de desafío
+      const top3El = document.getElementById('top3-list');
+      top3El.innerHTML = '';
+      data.slice(0, 3).forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'top3-row';
+        div.innerHTML = `
+          <span class="top3-medal">${medals[i]}</span>
+          <span class="top3-name">${p.username}</span>
+          <span class="top3-pts">${Number(p.puntos).toLocaleString()}</span>
+        `;
+        top3El.appendChild(div);
+      });
+
+      // Ranking completo en la card de abajo
+      const rankEl = document.getElementById('ranking-home');
+      rankEl.innerHTML = '';
+      data.forEach((p, i) => {
+        const row = document.createElement('div');
+        row.className = 'lb-row' + (i < 3 ? ' top3' : '');
+        row.style.marginBottom = '.3rem';
+        row.innerHTML = `
+          <div class="lb-num-circle ${circles[i] || 'cn'}">${medals[i] || i + 1}</div>
+          <span class="lb-name">${p.username}</span>
+          <div style="text-align:right">
+            <div class="lb-score">${Number(p.puntos).toLocaleString()} pts</div>
+            <div style="font-size:.72rem;color:var(--text-light)">${p.partidasJugadas} partidas</div>
+          </div>
+        `;
+        rankEl.appendChild(row);
+      });
+
     } catch (e) {
-      showToast('Error al cargar datos', 'error');
-    } finally {
-      setLoading(false);
+      document.getElementById('ranking-home').innerHTML =
+        '<div style="text-align:center;color:var(--text-light);padding:1rem">Sin datos</div>';
     }
   }
-  loadHome();
-*/
+
+  function showToast(msg, type = '') {
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => { t.classList.add('removing'); setTimeout(() => t.remove(), 260); }, 2600);
+  }
+
+  cargarRankingHome();
 </script>
 
 </body>

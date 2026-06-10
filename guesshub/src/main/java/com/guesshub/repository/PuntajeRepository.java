@@ -12,8 +12,14 @@ public interface PuntajeRepository extends JpaRepository<Puntaje, Long> {
 
     Optional<Puntaje> findByUsuarioId(Long usuarioId);
 
+    // Columnas explícitas: [0]=id [1]=usuario_id [2]=puntos [3]=partidas_jugadas [4]=partidas_correctas [5]=display_name
     @Query(value = """
-        SELECT p.*, u.username
+        SELECT p.id,
+               p.usuario_id,
+               p.puntos,
+               p.partidas_jugadas,
+               p.partidas_correctas,
+               u.display_name
         FROM puntajes p
         JOIN usuarios u ON u.id = p.usuario_id
         ORDER BY p.puntos DESC

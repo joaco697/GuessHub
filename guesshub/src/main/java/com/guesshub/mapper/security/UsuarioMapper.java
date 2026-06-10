@@ -11,28 +11,25 @@ import com.guesshub.entity.security.Usuario;
 
 @Component
 public class UsuarioMapper {
+
     public UsuarioDTO toDTO(Usuario usuario) {
-        if (usuario == null) {
-            return null;
-        }
-        return new UsuarioDTO(usuario.getUsername(), usuario.getRoles().stream()
-                .map(Rol::getNombre)
-                .toList());
+        if (usuario == null) return null;
+        return new UsuarioDTO(
+            usuario.getUsername(),
+            usuario.getDisplayName(),
+            usuario.getRoles().stream().map(Rol::getNombre).toList()
+        );
     }
 
     public List<UsuarioDTO> toDTOList(List<Usuario> usuarios) {
-        return usuarios.stream()
-                .map(this::toDTO)
-                .toList();
+        return usuarios.stream().map(this::toDTO).toList();
     }
 
-    public Usuario toEntity(RegistrarDTO registrarDTO) {
-        if (registrarDTO == null) {
-            return null;
-        }
+    public Usuario toEntity(RegistrarDTO dto) {
+        if (dto == null) return null;
         Usuario usuario = new Usuario();
-        usuario.setUsername(registrarDTO.username());
+        usuario.setUsername(dto.username());
+        usuario.setDisplayName(dto.displayName());
         return usuario;
     }
 }
-

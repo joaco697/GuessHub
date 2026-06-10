@@ -20,7 +20,32 @@
       <input class="answer-input" id="login-password" type="password" placeholder="Contraseña"/>
     </div>
     <button class="btn-green" id="btn-login-submit">Ingresar</button>
+    <div style="margin-top:.75rem;text-align:center;font-size:.85rem;color:var(--text-light)">
+      ¿No tenés cuenta?
+      <button onclick="abrirRegistro()" style="color:var(--green);font-weight:800;background:none;border:none;cursor:pointer;font-family:inherit">Registrate</button>
+    </div>
     <div id="login-error" style="color:var(--red);font-size:.82rem;margin-top:.5rem;text-align:center"></div>
+  </div>
+</div>
+
+<!-- ── MODAL REGISTRO ───────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="modal-registro">
+  <div class="modal">
+    <div style="font-size:2rem;margin-bottom:.5rem">📝</div>
+    <div style="font-size:1.2rem;font-weight:900;margin-bottom:1rem">Crear cuenta</div>
+    <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem">
+      <input class="answer-input" id="reg-username" type="email" placeholder="Email" autocomplete="off"/>
+      <input class="answer-input" id="reg-displayname" type="text" placeholder="Nombre de usuario (ej: jugador123)" autocomplete="off"/>
+      <input class="answer-input" id="reg-password" type="password" placeholder="Contraseña (mín. 16 chars)"/>
+      <input class="answer-input" id="reg-password2" type="password" placeholder="Repetir contraseña"/>
+    </div>
+    <button class="btn-green" id="btn-registro-submit">Crear cuenta</button>
+    <div style="margin-top:.75rem;text-align:center;font-size:.85rem;color:var(--text-light)">
+      ¿Ya tenés cuenta?
+      <button onclick="abrirLogin()" style="color:var(--green);font-weight:800;background:none;border:none;cursor:pointer;font-family:inherit">Iniciá sesión</button>
+    </div>
+    <div id="registro-error" style="color:var(--red);font-size:.82rem;margin-top:.5rem;text-align:center"></div>
+    <div id="registro-ok" style="color:var(--green);font-size:.82rem;margin-top:.5rem;text-align:center"></div>
   </div>
 </div>
 
@@ -67,17 +92,13 @@
           </div>
         </div>
 
-
-
         <!-- Pistas reveladas -->
         <div id="clues-container" style="display:flex;flex-direction:column;gap:.5rem"></div>
 
-        <!-- Botón única pista extra (pista 2) -->
+        <!-- Botones de pistas: ocultos por defecto -->
         <button class="btn-dashed hidden" id="btn-pista2">💡 Ver pista 2</button>
-        <!-- Botón pista 3 -->
         <button class="btn-dashed hidden" id="btn-pista3">💡 Ver pista 3</button>
 
-        <!-- Input respuesta -->
         <input
           class="answer-input"
           id="answer-input"
@@ -127,8 +148,18 @@
   let segundosUsados = 0;
   const TIEMPO_MAX = 60;
 
-  function getToken()    { return localStorage.getItem('token'); }
-  function getUsername() { return localStorage.getItem('username'); }
+  function getToken()       { return localStorage.getItem('token'); }
+  function getDisplayName() { return localStorage.getItem('displayName') || localStorage.getItem('username') || '–'; }
+
+  // ── Modales ───────────────────────────────────────────────────
+  function abrirLogin() {
+    document.getElementById('modal-registro').classList.add('hidden');
+    document.getElementById('modal-login').classList.remove('hidden');
+  }
+  function abrirRegistro() {
+    document.getElementById('modal-login').classList.add('hidden');
+    document.getElementById('modal-registro').classList.remove('hidden');
+  }
 
   // ── Al cargar ─────────────────────────────────────────────────
   window.addEventListener('load', () => {
@@ -136,7 +167,7 @@
       document.getElementById('modal-login').classList.remove('hidden');
     } else {
       document.getElementById('modal-login').classList.add('hidden');
-      document.getElementById('nav-user').textContent = '👤 ' + getUsername();
+      document.getElementById('nav-user').textContent = '👤 ' + getDisplayName();
       cargarPregunta();
     }
   });
@@ -158,18 +189,53 @@
       const data = await res.json();
       localStorage.setItem('token', data.token);
       localStorage.setItem('username', username);
+      // Guardar displayName si el backend lo devuelve, sino usar parte antes del @
+      localStorage.setItem('displayName', data.displayName || username.split('@')[0]);
       document.getElementById('modal-login').classList.add('hidden');
-      document.getElementById('nav-user').textContent = '👤 ' + username;
+      document.getElementById('nav-user').textContent = '👤 ' + getDisplayName();
       cargarPregunta();
     } catch (e) { errorEl.textContent = 'Error de conexión'; }
   });
 
-  // ── Cargar pregunta (alterna entre pelicula y cancion) ────────
+  // ── Registro ──────────────────────────────────────────────────
+  document.getElementById('btn-registro-submit').addEventListener('click', async () => {
+    const username     = document.getElementById('reg-username').value.trim();
+    const displayName  = document.getElementById('reg-displayname').value.trim();
+    const password     = document.getElementById('reg-password').value.trim();
+    const password2    = document.getElementById('reg-password2').value.trim();
+    const errorEl      = document.getElementById('registro-error');
+    const okEl         = document.getElementById('registro-ok');
+    errorEl.textContent = '';
+    okEl.textContent    = '';
+
+    if (!username || !displayName || !password || !password2) {
+      errorEl.textContent = 'Completá todos los campos'; return;
+    }
+    if (password !== password2) {
+      errorEl.textContent = 'Las contraseñas no coinciden'; return;
+    }
+
+    try {
+      const res = await fetch('/equipo/usuarios/registrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, displayName, password, verificacionPassword: password2 })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errorEl.textContent = data.message || 'Error al registrarse';
+        return;
+      }
+      okEl.textContent = '¡Cuenta creada! Iniciá sesión.';
+      setTimeout(() => abrirLogin(), 1500);
+    } catch (e) { errorEl.textContent = 'Error de conexión'; }
+  });
+
+  // ── Cargar pregunta ───────────────────────────────────────────
   async function cargarPregunta() {
-    // Alternar modo
     modoActual = modoActual === 'pelicula' ? 'cancion' : 'pelicula';
 
-    // Reset UI
+    // Reset completo
     pistasReveladas = 1;
     preguntaActual  = null;
     document.getElementById('clues-container').innerHTML = '';
@@ -177,10 +243,10 @@
     document.getElementById('answer-input').className = 'answer-input';
     document.getElementById('answer-input').disabled = false;
     document.getElementById('btn-enviar').disabled = false;
+    // Ambos botones ocultos al arrancar
     document.getElementById('btn-pista2').classList.add('hidden');
     document.getElementById('btn-pista3').classList.add('hidden');
 
-    // UI según modo
     if (modoActual === 'pelicula') {
       document.getElementById('game-mode-title').textContent = '🎬 ¿Qué película es?';
       document.getElementById('game-mode-badge').textContent = 'Películas';
@@ -205,35 +271,48 @@
       const data = await res.json();
 
       if (modoActual === 'pelicula') {
-        // API devuelve objeto directo
-        preguntaActual = {
-          id:     data.id,
-          tipo:   'pelicula',
-          pista1: data.pista1,
-          pista2: data.pista2,
-          pista3: data.pista3
-        };
+        preguntaActual = { id: data.id, tipo: 'pelicula', pista1: data.pista1, pista2: data.pista2, pista3: data.pista3 };
       } else {
-        // API devuelve array
         const cancion = Array.isArray(data) ? data[0] : data;
-        preguntaActual = {
-          id:     cancion.id || null,
-          tipo:   'cancion',
-          nombre: cancion.nombre,
-          pista1: cancion.pista1,
-          pista2: cancion.pista2,
-          pista3: cancion.pista3
-        };
+        preguntaActual = { tipo: 'cancion', nombre: cancion.nombre, pista1: cancion.pista1, pista2: cancion.pista2, pista3: cancion.pista3 };
       }
 
-      // Mostrar pista 1 y habilitar botón pista 2
       agregarPista(preguntaActual.pista1);
+      // Solo mostrar botón pista 2; pista 3 se muestra SOLO cuando se revela la 2
       document.getElementById('btn-pista2').classList.remove('hidden');
       iniciarTimer();
 
     } catch (e) {
       showToast('Error de conexión', 'error');
     }
+  }
+
+  // ── Pistas ────────────────────────────────────────────────────
+  document.getElementById('btn-pista2').addEventListener('click', () => {
+    if (pistasReveladas >= 2) return;
+    agregarPista(preguntaActual.pista2);
+    pistasReveladas = 2;
+    // Ocultar este botón, mostrar el de pista 3
+    document.getElementById('btn-pista2').classList.add('hidden');
+    document.getElementById('btn-pista3').classList.remove('hidden');
+  });
+
+  document.getElementById('btn-pista3').addEventListener('click', () => {
+    if (pistasReveladas >= 3) return;
+    agregarPista(preguntaActual.pista3);
+    pistasReveladas = 3;
+    // Ocultar definitivamente, no hay más pistas
+    document.getElementById('btn-pista3').classList.add('hidden');
+    showToast('No hay más pistas disponibles', '');
+  });
+
+  function agregarPista(texto) {
+    if (!texto) return;
+    const div = document.createElement('div');
+    div.className = 'clue-row anim-clue';
+    div.innerHTML = `<span class="clue-bulb">💡</span>${texto}`;
+    document.getElementById('clues-container').appendChild(div);
+    div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   // ── Timer ─────────────────────────────────────────────────────
@@ -247,15 +326,15 @@
       actualizarTimer(restantes);
       if (restantes <= 0) {
         clearInterval(timerInterval);
-        // Tiempo agotado — derrota automática
         document.getElementById('answer-input').disabled = true;
         document.getElementById('btn-enviar').disabled = true;
         document.getElementById('btn-pista2').classList.add('hidden');
         document.getElementById('btn-pista3').classList.add('hidden');
         guardarPartida(false);
-        setTimeout(() => mostrarResultado(false, preguntaActual
-          ? (preguntaActual.tipo === 'pelicula' ? '(tiempo agotado)' : preguntaActual.nombre)
-          : '(tiempo agotado)'), 400);
+        setTimeout(() => mostrarResultado(false,
+          preguntaActual
+            ? (preguntaActual.tipo === 'pelicula' ? '(tiempo agotado)' : preguntaActual.nombre)
+            : '(tiempo agotado)'), 400);
       }
     }, 1000);
   }
@@ -273,52 +352,17 @@
     }
   }
 
-  function detenerTimer() {
-    clearInterval(timerInterval);
-  }
+  function detenerTimer() { clearInterval(timerInterval); }
 
-  // ── Guardar partida en backend ────────────────────────────────
+  // ── Guardar partida ───────────────────────────────────────────
   async function guardarPartida(correcto) {
     try {
       await fetch('/api/partida', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + getToken()
-        },
-        body: JSON.stringify({
-          correcto,
-          pistasUsadas: pistasReveladas,
-          segundosUsados
-        })
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+        body: JSON.stringify({ correcto, pistasUsadas: pistasReveladas, segundosUsados })
       });
-    } catch (e) {
-      console.error('Error guardando partida', e);
-    }
-  }
-
-
-  document.getElementById('btn-pista2').addEventListener('click', () => {
-    agregarPista(preguntaActual.pista2);
-    pistasReveladas = 2;
-    document.getElementById('btn-pista2').classList.add('hidden');
-    document.getElementById('btn-pista3').classList.remove('hidden');
-  });
-
-  document.getElementById('btn-pista3').addEventListener('click', () => {
-    agregarPista(preguntaActual.pista3);
-    pistasReveladas = 3;
-    document.getElementById('btn-pista3').classList.add('hidden');
-    showToast('No hay más pistas disponibles', '');
-  });
-
-  function agregarPista(texto) {
-    if (!texto) return;
-    const div = document.createElement('div');
-    div.className = 'clue-row anim-clue';
-    div.innerHTML = `<span class="clue-bulb">💡</span>${texto}`;
-    document.getElementById('clues-container').appendChild(div);
-    div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (e) { console.error('Error guardando partida', e); }
   }
 
   // ── Enviar respuesta ──────────────────────────────────────────
@@ -334,6 +378,8 @@
 
     document.getElementById('btn-enviar').disabled = true;
     document.getElementById('answer-input').disabled = true;
+    document.getElementById('btn-pista2').classList.add('hidden');
+    document.getElementById('btn-pista3').classList.add('hidden');
     detenerTimer();
 
     try {
@@ -347,13 +393,9 @@
         });
         resultado = await res.json();
       } else {
-        // Para canciones: validamos localmente por ahora comparando normalizado
         const normalizar = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
         const correcto = normalizar(respuesta) === normalizar(preguntaActual.nombre);
-        resultado = {
-          correcto,
-          tituloCorrecto: preguntaActual.nombre
-        };
+        resultado = { correcto, tituloCorrecto: preguntaActual.nombre };
       }
 
       const input = document.getElementById('answer-input');
@@ -368,8 +410,6 @@
         card.classList.remove('anim-shake');
         void card.offsetWidth;
         card.classList.add('anim-shake');
-        document.getElementById('btn-pista2').classList.add('hidden');
-        document.getElementById('btn-pista3').classList.add('hidden');
         await guardarPartida(false);
         setTimeout(() => mostrarResultado(false, resultado.tituloCorrecto), 800);
       }

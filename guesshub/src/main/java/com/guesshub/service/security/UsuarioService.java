@@ -14,6 +14,7 @@ import com.guesshub.repository.security.UsuarioRepository;
 
 @Service
 public class UsuarioService {
+
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
@@ -33,13 +34,16 @@ public class UsuarioService {
             throw new IllegalArgumentException("Las contraseñas no coinciden");
         }
         if (usuarioRepository.existsByUsername(usuario.getUsername())) {
+            throw new IllegalArgumentException("El email ya está en uso");
+        }
+        if (usuarioRepository.existsByDisplayName(usuario.getDisplayName())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }
 
         usuario.setPassword(passwordEncoder.encode(password));
-        Rol rolCliente = rolRepository.findByNombre("CLIENTE").orElseThrow(() -> new IllegalArgumentException("Rol 'CLIENTE' no encontrado"));
+        Rol rolCliente = rolRepository.findByNombre("CLIENTE")
+            .orElseThrow(() -> new IllegalArgumentException("Rol 'CLIENTE' no encontrado"));
         usuario.setRoles(Set.of(rolCliente));
         return usuarioRepository.save(usuario);
     }
 }
-

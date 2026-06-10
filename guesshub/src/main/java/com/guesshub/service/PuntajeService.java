@@ -22,32 +22,15 @@ public class PuntajeService {
     private final PuntajeRepository puntajeRepository;
     private final UsuarioRepository usuarioRepository;
 
-    /**
-     * Calcula los puntos de una partida:
-     * - Base: 1000 pts si acertó, 0 si no
-     * - Penalización pistas: -200 por cada pista extra (pista2 = -200, pista3 = -400)
-     * - Penalización tiempo: -5 pts por cada segundo usado
-     * Mínimo 0 puntos.
-     */
     public int calcularPuntos(boolean correcto, int pistasUsadas, int segundosUsados) {
         if (!correcto) return 0;
-
         int puntos = 1000;
-
-        // Penalización por pistas (pista 1 es gratis, pista 2 = -200, pista 3 = -400)
         if (pistasUsadas >= 2) puntos -= 200;
         if (pistasUsadas >= 3) puntos -= 200;
-
-        // Penalización por tiempo (5 pts por segundo)
         puntos -= (segundosUsados * 5);
-
         return Math.max(0, puntos);
     }
 
-    /**
-     * Guarda el resultado de una partida para el usuario autenticado.
-     * Crea el registro de puntaje si no existe.
-     */
     @Transactional
     public int guardarPartida(boolean correcto, int pistasUsadas, int segundosUsados) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -64,14 +47,13 @@ public class PuntajeService {
         if (correcto) puntaje.setPartidasCorrectas(puntaje.getPartidasCorrectas() + 1);
 
         puntajeRepository.save(puntaje);
-        log.info("Partida guardada para {}: +{} pts (correcto={}, pistas={}, segundos={})",
-                username, puntosGanados, correcto, pistasUsadas, segundosUsados);
+        log.info("Partida guardada para {}: +{} pts", username, puntosGanados);
 
         return puntosGanados;
     }
 
     /**
-     * Devuelve el top 10 del ranking global.
+     * Query devuelve: [0]=id [1]=usuario_id [2]=puntos [3]=partidas_jugadas [4]=partidas_correctas [5]=display_name
      */
     public List<RankingDTO> getRanking() {
         List<Object[]> rows = puntajeRepository.findTop10();
@@ -80,7 +62,7 @@ public class PuntajeService {
             Object[] row = rows.get(i);
             ranking.add(new RankingDTO(
                 i + 1,
-                (String) row[5],              // username
+                (String) row[5],              // display_name
                 ((Number) row[2]).intValue(),  // puntos
                 ((Number) row[3]).intValue(),  // partidas_jugadas
                 ((Number) row[4]).intValue()   // partidas_correctas

@@ -39,6 +39,10 @@ public class Usuario {
     @NotBlank(message = "La contraseña es requerida")
     private String password;
 
+    // Nombre visible en ranking y perfil (elegido al registrarse)
+    @Column(name = "display_name", nullable = false, unique = true, length = 50)
+    private String displayName;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "usuario_roles",
@@ -50,8 +54,13 @@ public class Usuario {
     public Usuario(String username, String password) {
         this.username = username;
         this.password = password;
+        // Si no se provee displayName, usar la parte antes del @
+        this.displayName = username.contains("@") ? username.split("@")[0] : username;
+    }
+
+    public Usuario(String username, String password, String displayName) {
+        this.username = username;
+        this.password = password;
+        this.displayName = displayName;
     }
 }
-
-
-
