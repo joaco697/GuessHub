@@ -9,6 +9,6 @@ public record LoginDTO(
         @Email(message = "El nombre de usuario debe ser un email válido") 
         String username,
         @NotBlank(message = "La contraseña es requerida") 
-        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{16,}$", message = "La contraseña debe tener al menos 16 caracteres, una mayúscula, una minúscula, un número y un carácter especial")
+        @Pattern(regexp = "^.{8,}$", message = "La contraseña debe tener al menos 8")
         String password) {
 }

@@ -177,14 +177,10 @@
 
   // ── Al cargar ─────────────────────────────────────────────────
   window.addEventListener('load', () => {
-    if (!getToken()) {
-      document.getElementById('modal-login').classList.remove('hidden');
-    } else {
-      document.getElementById('modal-login').classList.add('hidden');
-      // FIX: usar getDisplayName() que nunca devuelve el email completo
-      document.getElementById('nav-user').textContent = '👤 ' + getDisplayName();
-      cargarPregunta();
-    }
+  document.getElementById('modal-login').classList.add('hidden');
+  const nombre = getDisplayName();
+  document.getElementById('nav-user').textContent = getToken() ? '👤 ' + nombre : '👤 Invitado';
+  cargarPregunta();
   });
 
   // ── Login ─────────────────────────────────────────────────────
@@ -376,6 +372,7 @@
 
   // ── Guardar partida ───────────────────────────────────────────
   async function guardarPartida(correcto) {
+    if (!getToken()) return;
     try {
       await fetch('/api/partida', {
         method: 'POST',
@@ -496,10 +493,16 @@
     acItems = sugerencias;
     acIndex = -1;
     if (sugerencias.length === 0) { cerrarDropdown(); return; }
+
+    const header = document.createElement('div');
+    header.style.cssText = 'padding:.4rem 1rem;font-size:.75rem;font-weight:800;color:var(--text-light);border-bottom:1px solid var(--border);background:var(--bg-section);';
+    header.textContent = sugerencias.length + ' resultados:';
+    dropdown.appendChild(header);
+
     sugerencias.forEach((s, i) => {
       const div = document.createElement('div');
       div.className = 'ac-item';
-      div.style.cssText = 'padding:.6rem 1rem;font-size:.92rem;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;color:var(--text-dark);';
+      div.style.cssText = 'padding:.7rem 1rem;font-size:.92rem;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;color:var(--text-dark);';
       if (i === sugerencias.length - 1) div.style.borderBottom = 'none';
       div.textContent = s;
       div.addEventListener('mousedown', e => { e.preventDefault(); seleccionarItem(s); });
@@ -552,7 +555,20 @@
 
   new MutationObserver(() => {
     if (answerInput.disabled) cerrarDropdown();
-  }).observe(answerInput, { attributes: true, attributeFilter: ['disabled'] });
+    }).observe(answerInput, { attributes: true, attributeFilter: ['disabled'] });
+
+    window.addEventListener('load', () => {
+    document.getElementById('modal-login').classList.add('hidden');
+    const nombre = getDisplayName();
+    document.getElementById('nav-user').textContent = getToken() ? '👤 ' + nombre : '👤 Invitado';
+    
+    // Abre el modal si vino con #login o si hay token
+    if (window.location.hash === '#login' && !getToken()) {
+      document.getElementById('modal-login').classList.remove('hidden');
+    }
+    
+    cargarPregunta();
+  });
 
 </script>
 

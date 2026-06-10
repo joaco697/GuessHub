@@ -45,10 +45,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
 
                         // Random y respuesta películas: cualquier usuario autenticado
-                        .requestMatchers(HttpMethod.GET, "/api/random").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/pelicula/random").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/pelicula/respuesta").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/partida").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/random").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/pelicula/random").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/pelicula/respuesta").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/partida").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ranking").permitAll()
 
                         // Productos y mascotas — solo ADMIN
@@ -60,6 +60,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/equipo").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/equipo**").hasAnyRole("ADMIN", "CLIENTE")
                         .requestMatchers("/equipo/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/buscar").permitAll()
 
                         .anyRequest().authenticated()
                 )

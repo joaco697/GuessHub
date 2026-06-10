@@ -8,13 +8,8 @@ import java.util.regex.Pattern;
  */
 public class PasswordValidator {
     
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile(
-        "^.{16,}$"
-    );
-    
-    private static final String PASSWORD_MESSAGE = 
-        "La contraseña debe tener al menos 16 caracteres";
-    
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^.{8,}$");
+    private static final String PASSWORD_MESSAGE = "La contraseña debe tener al menos 8 caracteres";
     /**
      * Valida si una contraseña cumple con los requisitos de seguridad.
      * 
