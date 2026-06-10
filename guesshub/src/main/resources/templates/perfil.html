@@ -19,7 +19,7 @@
       Guess<span class="logo-green">Hub</span>
     </div>
     <div class="nav-right">
-      <button class="btn-ingresar" id="btn-ingresar">Ingresar</button>
+      <button class="btn-ingresar" id="btn-ingresar" onclick="location.href='/game'">Ingresar</button>
       <button class="avatar-btn">👤</button>
     </div>
   </nav>
@@ -37,59 +37,72 @@
                  font-size:2.2rem;margin:0 auto .75rem;
                  border:3px solid var(--green-light);"
         >👤</div>
-        <!-- Nombre: renderizar con renderProfile() -->
         <div id="profile-name" style="font-weight:900;font-size:1.25rem">–</div>
         <div id="profile-handle" style="color:var(--text-light);font-size:.85rem;margin:.2rem 0 .75rem">–</div>
-        <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap" id="profile-badges">
-          <!-- renderizado por renderProfile() -->
-        </div>
+        <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap" id="profile-badges"></div>
       </div>
 
       <!-- Stats -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem" id="stats-grid">
-        <!-- renderizado por renderStats() -->
-      </div>
-
-      <!-- Categorías favoritas -->
-      <div class="card">
-        <div style="font-weight:900;font-size:1rem;margin-bottom:1rem">Categorías favoritas</div>
-        <div style="display:flex;flex-direction:column;gap:.85rem" id="fav-categories">
-          <!-- renderizado por renderFavCategories() -->
-        </div>
-      </div>
-
-      <!-- Actividad semanal -->
-      <div class="card">
-        <div style="font-weight:900;font-size:1rem;margin-bottom:1rem">Actividad semanal</div>
-        <div class="activity-chart" id="activity-chart">
-          <!-- renderizado por renderActivity() -->
-        </div>
-        <div class="activity-labels" id="activity-labels">
-          <!-- renderizado por renderActivity() -->
-        </div>
+        <div class="stat-mini"><div class="val">–</div><div class="lbl">Puntos</div></div>
+        <div class="stat-mini"><div class="val">–</div><div class="lbl">Partidas</div></div>
+        <div class="stat-mini"><div class="val">–</div><div class="lbl">Precisión</div></div>
+        <div class="stat-mini"><div class="val">–</div><div class="lbl">Ranking</div></div>
       </div>
 
       <!-- Logros -->
       <div class="section-title"><span>🏅</span> Logros</div>
       <div class="achievements-scroll" id="logros-perfil">
-        <!-- renderizado por renderLogros() -->
+        <div style="color:var(--text-light);font-size:.85rem;padding:.5rem">Cargando...</div>
       </div>
 
-      <!-- Historial -->
+      <!-- Categorías favoritas -->
       <div class="card">
-        <div style="font-weight:900;font-size:1rem;margin-bottom:.9rem">Historial reciente</div>
-        <div style="display:flex;flex-direction:column;gap:.5rem" id="history-list">
-          <!-- renderizado por renderHistory() -->
+        <div style="font-weight:900;font-size:1rem;margin-bottom:1rem">Categorías jugadas</div>
+        <div style="display:flex;flex-direction:column;gap:.85rem">
+          <div class="cat-progress-row">
+            <div class="cat-progress-header"><span>🎬 Películas</span><span>50%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
+          </div>
+          <div class="cat-progress-row">
+            <div class="cat-progress-header"><span>🎵 Música</span><span>50%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
+          </div>
         </div>
       </div>
 
       <!-- Configuración -->
       <div class="card">
         <div style="font-weight:900;font-size:1rem;margin-bottom:1rem">Configuración</div>
-        <div style="display:flex;flex-direction:column;gap:.9rem" id="settings-list">
-          <!-- renderizado por renderSettings() -->
+        <div style="display:flex;flex-direction:column;gap:.9rem">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
+            <div>
+              <div style="font-weight:800;font-size:.92rem">Sonidos</div>
+              <div style="font-size:.76rem;color:var(--text-light);font-weight:600">Efectos de sonido en el juego</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div style="height:1px;background:var(--border)"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
+            <div>
+              <div style="font-weight:800;font-size:.92rem">Notificaciones</div>
+              <div style="font-size:.76rem;color:var(--text-light);font-weight:600">Avisos de ranking y logros</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
         </div>
       </div>
+
+      <!-- Cerrar sesión -->
+      <button class="btn-dashed" id="btn-logout" style="color:var(--red);border-color:var(--red)">
+        🚪 Cerrar sesión
+      </button>
 
       <div style="height:.5rem"></div>
     </div>
@@ -115,25 +128,104 @@
     </button>
   </nav>
 
-</div><!-- /phone-frame -->
+</div>
 
 <script>
 /* =============================================================
-   perfil.js — SOLO ANIMACIONES Y RENDER
+   perfil.js — Carga datos reales desde localStorage y la API
    ============================================================= */
 
-// ── renderProfile(user) ───────────────────────────────────────
-// GET /api/profile/me → user: { name, username, joinDate, streakDays, rankPosition }
-function renderProfile(user) {
-  document.getElementById('profile-name').textContent    = user.name;
-  document.getElementById('profile-handle').textContent  = `@${user.username} · desde ${user.joinDate}`;
+// FIX: leer displayName correctamente (nunca mostrar el email)
+function getDisplayName() {
+  const displayName = localStorage.getItem('displayName');
+  if (displayName && displayName.trim()) return displayName.trim();
+  const username = localStorage.getItem('username') || '';
+  return username.includes('@') ? username.split('@')[0] : (username || 'Jugador');
+}
 
+function getToken() { return localStorage.getItem('token'); }
+
+// ── Al cargar: renderizar perfil desde localStorage + API ─────
+window.addEventListener('load', async () => {
+  const displayName = getDisplayName();
+
+  // Navbar
+  const btnIngresar = document.getElementById('btn-ingresar');
+  if (getToken()) {
+    btnIngresar.textContent = '👤 ' + displayName;
+    btnIngresar.onclick = null;
+  }
+
+  // Avatar: primera letra del displayName
+  document.getElementById('profile-avatar').textContent =
+    displayName.charAt(0).toUpperCase();
+
+  // Nombre y handle
+  document.getElementById('profile-name').textContent = displayName;
+  const username = localStorage.getItem('username') || '';
+  document.getElementById('profile-handle').textContent =
+    username ? '@' + username.split('@')[0] : '@' + displayName.toLowerCase();
+
+  // Badges base (sin datos de ranking todavía)
+  renderBadges({ rankPosition: '–', streakDays: 1 });
+
+  // Cargar datos reales desde la API de ranking
+  await cargarDatosRanking(displayName);
+
+  // FIX: renderizar logros reales
+  renderLogros();
+});
+
+// ── Cargar ranking y buscar al usuario actual ─────────────────
+async function cargarDatosRanking(myDisplayName) {
+  try {
+    const res = await fetch('/api/ranking');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // Buscar al usuario en el ranking
+    const miPos = data.findIndex(p => p.username === myDisplayName);
+    const miData = miPos !== -1 ? data[miPos] : null;
+
+    // Actualizar stats
+    if (miData) {
+      const precision = miData.partidasJugadas > 0
+        ? Math.round((miData.partidasCorrectas / miData.partidasJugadas) * 100)
+        : 0;
+
+      renderStats({
+        totalScore: miData.puntos,
+        gamesPlayed: miData.partidasJugadas,
+        accuracy: precision,
+        rankPosition: miPos + 1
+      });
+
+      // Actualizar badges con posición real
+      renderBadges({ rankPosition: miPos + 1, streakDays: 1 });
+
+      // Actualizar logros según stats reales
+      renderLogros(miData);
+    } else {
+      // Usuario sin partidas aún
+      renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
+      renderLogros(null);
+    }
+
+  } catch (e) {
+    console.error('Error cargando ranking:', e);
+    renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
+    renderLogros(null);
+  }
+}
+
+// ── renderBadges ──────────────────────────────────────────────
+function renderBadges({ rankPosition, streakDays }) {
   const badges = document.getElementById('profile-badges');
   badges.innerHTML = '';
   const badgeData = [
-    { text: '🎮 Activo',              cls: 'pill pill-green-outline' },
-    { text: `🔥 Racha x${user.streakDays}`, cls: 'pill pill-orange' },
-    { text: `🌍 Ranking #${user.rankPosition}`, cls: 'pill pill-green-outline' },
+    { text: '🎮 Activo',                   cls: 'pill pill-green-outline' },
+    { text: `🔥 Racha x${streakDays}`,     cls: 'pill pill-orange' },
+    { text: `🌍 Ranking #${rankPosition}`, cls: 'pill pill-green-outline' },
   ];
   badgeData.forEach(b => {
     const span = document.createElement('span');
@@ -144,14 +236,13 @@ function renderProfile(user) {
   });
 }
 
-// ── renderStats(stats) ───────────────────────────────────────
-// stats: { totalScore, gamesPlayed, accuracy, rankPosition }
-function renderStats(stats) {
+// ── renderStats ───────────────────────────────────────────────
+function renderStats({ totalScore, gamesPlayed, accuracy, rankPosition }) {
   const items = [
-    { val: Number(stats.totalScore).toLocaleString(), lbl: 'Puntos'   },
-    { val: stats.gamesPlayed,                          lbl: 'Partidas' },
-    { val: stats.accuracy + '%',                       lbl: 'Precisión'},
-    { val: '#' + stats.rankPosition,                   lbl: 'Ranking'  },
+    { val: Number(totalScore).toLocaleString(), lbl: 'Puntos'    },
+    { val: gamesPlayed,                          lbl: 'Partidas'  },
+    { val: accuracy + '%',                       lbl: 'Precisión' },
+    { val: '#' + rankPosition,                   lbl: 'Ranking'   },
   ];
   const grid = document.getElementById('stats-grid');
   grid.innerHTML = '';
@@ -163,119 +254,77 @@ function renderStats(stats) {
   });
 }
 
-// ── renderFavCategories(categories) ──────────────────────────
-// categories: [{ icon, name, percentage }]
-function renderFavCategories(categories) {
-  const container = document.getElementById('fav-categories');
-  container.innerHTML = '';
-  categories.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'cat-progress-row';
-    div.innerHTML = `
-      <div class="cat-progress-header">
-        <span>${c.icon} ${c.name}</span>
-        <span>${c.percentage}%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" style="width:${c.percentage}%"></div>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
+// ── FIX: renderLogros con datos reales ───────────────────────
+// Determina qué logros están desbloqueados según las stats del usuario
+function renderLogros(userData) {
+  const partidas      = userData ? userData.partidasJugadas   : 0;
+  const correctas     = userData ? userData.partidasCorrectas : 0;
+  const puntos        = userData ? userData.puntos            : 0;
+  const precision     = partidas > 0 ? correctas / partidas : 0;
 
-// ── renderActivity(weekData) ──────────────────────────────────
-// weekData: [{ day, value, isToday }]  (7 elementos, L-D)
-function renderActivity(weekData) {
-  const maxVal   = Math.max(...weekData.map(d => d.value), 1);
-  const chartEl  = document.getElementById('activity-chart');
-  const labelsEl = document.getElementById('activity-labels');
-  chartEl.innerHTML  = '';
-  labelsEl.innerHTML = '';
-  weekData.forEach(d => {
-    const bar = document.createElement('div');
-    bar.className = 'activity-bar' + (d.isToday ? ' today' : '');
-    bar.style.height = Math.round((d.value / maxVal) * 100) + '%';
-    chartEl.appendChild(bar);
-    const lbl = document.createElement('div');
-    lbl.className = 'activity-label';
-    lbl.textContent = d.day;
-    labelsEl.appendChild(lbl);
-  });
-}
+  const achievements = [
+    {
+      icon: '🎬', name: 'Cinéfilo',
+      unlocked: partidas >= 1,
+      desc: 'Jugar al menos 1 partida'
+    },
+    {
+      icon: '🎵', name: 'Melómano',
+      unlocked: partidas >= 5,
+      desc: 'Jugar 5 partidas'
+    },
+    {
+      icon: '🏆', name: 'Top 10',
+      unlocked: userData !== null && puntos > 0,
+      desc: 'Aparecer en el ranking'
+    },
+    {
+      icon: '🎯', name: 'Certero',
+      unlocked: precision >= 0.7 && partidas >= 3,
+      desc: '70%+ de precisión (mín. 3 partidas)'
+    },
+    {
+      icon: '⚡', name: 'Velocista',
+      unlocked: correctas >= 3,
+      desc: '3 respuestas correctas'
+    },
+    {
+      icon: '💎', name: 'Veterano',
+      unlocked: partidas >= 10,
+      desc: '10 partidas jugadas'
+    },
+    {
+      icon: '🌟', name: 'Mil puntos',
+      unlocked: puntos >= 1000,
+      desc: 'Acumular 1000 puntos'
+    },
+    {
+      icon: '👑', name: 'Maestro',
+      unlocked: puntos >= 5000,
+      desc: 'Acumular 5000 puntos'
+    },
+  ];
 
-// ── renderLogros(achievements) ────────────────────────────────
-// achievements: [{ icon, name, unlocked }]
-function renderLogros(achievements) {
   const container = document.getElementById('logros-perfil');
   container.innerHTML = '';
+
   achievements.forEach((a, i) => {
     const div = document.createElement('div');
     div.className = 'ach-item anim-fade-up' + (a.unlocked ? '' : ' locked');
     div.style.animationDelay = `${i * 0.05}s`;
+    div.title = a.unlocked ? '¡Desbloqueado!' : `Bloqueado: ${a.desc}`;
     div.innerHTML = `<div class="ach-icon">${a.icon}</div><div class="ach-name">${a.name}</div>`;
     container.appendChild(div);
   });
 }
 
-// ── renderHistory(matches) ────────────────────────────────────
-// matches: [{ icon, title, date, points, won }]
-function renderHistory(matches) {
-  const container = document.getElementById('history-list');
-  container.innerHTML = '';
-  matches.forEach(m => {
-    const div = document.createElement('div');
-    div.className = 'history-item';
-    div.innerHTML = `
-      <span class="hi-icon">${m.icon}</span>
-      <div style="flex:1">
-        <div class="hi-title">${m.title}</div>
-        <div class="hi-meta">${m.date}</div>
-      </div>
-      <div class="hi-pts ${m.won ? 'win' : 'loss'}">
-        ${m.won ? '+' : ''}${Number(m.points).toLocaleString()}
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-// ── renderSettings(settings) ─────────────────────────────────
-// settings: [{ key, label, description, enabled }]
-// El cambio se envía con PUT /api/profile/me/settings
-function renderSettings(settings) {
-  const container = document.getElementById('settings-list');
-  container.innerHTML = '';
-  settings.forEach((s, idx) => {
-    const div = document.createElement('div');
-    div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:.5rem';
-    div.innerHTML = `
-      <div>
-        <div style="font-weight:800;font-size:.92rem">${s.label}</div>
-        <div style="font-size:.76rem;color:var(--text-light);font-weight:600">${s.description}</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" ${s.enabled ? 'checked' : ''} data-key="${s.key}" onchange="onToggle(this)">
-        <span class="toggle-slider"></span>
-      </label>
-    `;
-    container.appendChild(div);
-    // Separador entre items
-    if (idx < settings.length - 1) {
-      const hr = document.createElement('div');
-      hr.style.cssText = 'height:1px;background:var(--border)';
-      container.appendChild(hr);
-    }
-  });
-}
-
-// ── onToggle: envía el cambio a la API ────────────────────────
-function onToggle(checkbox) {
-  const key     = checkbox.dataset.key;
-  const enabled = checkbox.checked;
-  // TODO: PUT /api/profile/me/settings con body { key, enabled }
-  // showToast con el resultado
-}
+// ── Cerrar sesión ─────────────────────────────────────────────
+document.getElementById('btn-logout').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+  localStorage.removeItem('displayName');
+  location.href = '/';
+});
 
 // ── Toast ─────────────────────────────────────────────────────
 function showToast(msg, type = '') {
@@ -288,35 +337,6 @@ function showToast(msg, type = '') {
     setTimeout(() => t.remove(), 260);
   }, 2600);
 }
-
-/*
-  ── EJEMPLO de integración ─────────────────────────────────────
-
-  async function loadProfile() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      // Usuario no logueado: mostrar pantalla de login
-      return;
-    }
-    try {
-      const user = await fetch('/api/profile/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(r => r.json());
-
-      renderProfile(user);
-      renderStats(user.stats);
-      renderFavCategories(user.favoriteCategories);
-      renderActivity(user.weekActivity);
-      renderLogros(user.achievements);
-      renderHistory(user.recentMatches);
-      renderSettings(user.settings);
-    } catch (e) {
-      showToast('Error al cargar perfil', 'error');
-    }
-  }
-
-  loadProfile();
-*/
 </script>
 
 </body>

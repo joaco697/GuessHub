@@ -17,7 +17,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -26,6 +27,9 @@ public class PeliculaService {
 
     private final PeliculaRepository peliculaRepository;
 
+    // Máximo de intentos para evitar loop infinito si casi todas las películas fallan en OMDB
+    private static final int MAX_INTENTOS = 5;
+
     @Value("${omdb.api.key}")
     private String omdbApiKey;
 
@@ -33,16 +37,46 @@ public class PeliculaService {
     private String omdbApiUrl;
 
     /**
-     * 1. Obtiene una película aleatoria de la BD
-     * 2. La busca en OMDB para obtener director, género, año y poster
-     * 3. Devuelve el DTO con pistas para el juego (incluye el id para luego validar)
+     * Obtiene una película aleatoria con todas las pistas válidas.
+     * Si alguna pista queda como "desconocido", reintenta con otra película.
+     * Tras MAX_INTENTOS fallidos lanza una excepción.
      */
     public PeliculaDTO obtenerPeliculaRandom() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        Set<Long> yaIntentadas = new HashSet<>();
 
-        Pelicula pelicula = peliculaRepository.findRandom()
-                .orElseThrow(() -> new RuntimeException(
-                        "No hay películas en la base de datos. Hacé sync primero: POST /api/admin/sync-peliculas"));
+        for (int intento = 1; intento <= MAX_INTENTOS; intento++) {
+            Pelicula pelicula = peliculaRepository.findRandom()
+                    .orElseThrow(() -> new RuntimeException(
+                            "No hay películas en la base de datos. Hacé sync primero: POST /api/admin/sync-peliculas"));
 
+            // Evitar reintentar la misma película
+            if (yaIntentadas.contains(pelicula.getId())) {
+                log.debug("Intento {}: película {} ya probada, pidiendo otra", intento, pelicula.getId());
+                continue;
+            }
+            yaIntentadas.add(pelicula.getId());
+
+            PeliculaDTO dto = buscarEnOmdb(pelicula, client);
+
+            if (tieneTodasLasPistas(dto)) {
+                log.info("Película encontrada con todas las pistas en intento {}: {}", intento, pelicula.getTitulo());
+                return dto;
+            }
+
+            log.warn("Intento {}/{}: pistas incompletas para '{}', buscando otra película",
+                    intento, MAX_INTENTOS, pelicula.getTituloOriginal());
+        }
+
+        throw new RuntimeException(
+                "No se encontró una película con pistas completas tras " + MAX_INTENTOS + " intentos. " +
+                "Verificá que OMDB tenga datos para las películas sincronizadas.");
+    }
+
+    /**
+     * Consulta OMDB para una película y arma el DTO con pistas.
+     */
+    private PeliculaDTO buscarEnOmdb(Pelicula pelicula, HttpClient client) throws Exception {
         String query = URLEncoder.encode(pelicula.getTituloOriginal(), StandardCharsets.UTF_8);
         String url = omdbApiUrl + "?apikey=" + omdbApiKey + "&t=" + query + "&type=movie";
 
@@ -51,9 +85,7 @@ public class PeliculaService {
                 .GET()
                 .build();
 
-        HttpResponse<String> response = HttpClient.newHttpClient()
-                .send(request, HttpResponse.BodyHandlers.ofString());
-
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         JSONObject json = new JSONObject(response.body());
 
         PeliculaDTO dto = new PeliculaDTO();
@@ -61,22 +93,36 @@ public class PeliculaService {
         dto.setTitulo(pelicula.getTitulo());
 
         if (!"True".equals(json.optString("Response"))) {
-            log.warn("OMDB no encontró: {}", pelicula.getTituloOriginal());
-            dto.setPista1("Género desconocido");
-            dto.setPista2("Director desconocido");
-            dto.setPista3("Año desconocido");
+            log.warn("OMDB no encontró: '{}'", pelicula.getTituloOriginal());
+            // Devolvemos DTO con pistas vacías para que el llamador decida reintentar
+            dto.setPista1("");
+            dto.setPista2("");
+            dto.setPista3("");
             dto.setPoster("");
             dto.setSinopsis("");
             return dto;
         }
 
-        dto.setPista1("Género: " + json.optString("Genre", "Desconocido"));
-        dto.setPista2("Director: " + json.optString("Director", "Desconocido"));
-        dto.setPista3("Año: " + json.optString("Year", "Desconocido"));
+        String genero   = json.optString("Genre",    "").trim();
+        String director = json.optString("Director", "").trim();
+        String anio     = json.optString("Year",     "").trim();
+
+        dto.setPista1(genero.isEmpty()   ? "" : "Género: "   + genero);
+        dto.setPista2(director.isEmpty() ? "" : "Director: " + director);
+        dto.setPista3(anio.isEmpty()     ? "" : "Año: "      + anio);
         dto.setPoster(json.optString("Poster", ""));
         dto.setSinopsis(json.optString("Plot", ""));
 
         return dto;
+    }
+
+    /**
+     * Devuelve true solo si las tres pistas tienen contenido útil.
+     */
+    private boolean tieneTodasLasPistas(PeliculaDTO dto) {
+        return dto.getPista1() != null && !dto.getPista1().isBlank()
+            && dto.getPista2() != null && !dto.getPista2().isBlank()
+            && dto.getPista3() != null && !dto.getPista3().isBlank();
     }
 
     /**

@@ -75,6 +75,7 @@
       Volver
     </button>
     <div class="game-top-badges">
+      <!-- FIX: siempre mostramos displayName, nunca el email -->
       <span class="pill pill-green-outline" id="nav-user">–</span>
     </div>
   </div>
@@ -96,18 +97,22 @@
         <div id="clues-container" style="display:flex;flex-direction:column;gap:.5rem"></div>
 
         <!-- Botones de pistas: ocultos por defecto -->
-        <button class="btn-dashed hidden" id="btn-pista2">💡 Ver pista 2</button>
-        <button class="btn-dashed hidden" id="btn-pista3">💡 Ver pista 3</button>
+        <button class="btn-dashed" id="btn-pista2" style="display:none">💡 Ver pista 2</button>
+        <button class="btn-dashed" id="btn-pista3" style="display:none">💡 Ver pista 3</button>
 
-        <input
-          class="answer-input"
-          id="answer-input"
-          type="text"
-          placeholder="Escribí tu respuesta…"
-          autocomplete="off"
-          autocorrect="off"
-          spellcheck="false"
-        />
+        <!-- Autocomplete wrapper -->
+        <div style="position:relative" id="autocomplete-wrapper">
+          <input
+            class="answer-input"
+            id="answer-input"
+            type="text"
+            placeholder="Escribí tu respuesta…"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+          />
+          <div id="autocomplete-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:2px solid var(--green);border-radius:var(--radius);box-shadow:var(--shadow-md);z-index:100;overflow:hidden;max-height:280px;overflow-y:auto;"></div>
+        </div>
 
         <button class="btn-green" id="btn-enviar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -148,8 +153,17 @@
   let segundosUsados = 0;
   const TIEMPO_MAX = 60;
 
-  function getToken()       { return localStorage.getItem('token'); }
-  function getDisplayName() { return localStorage.getItem('displayName') || localStorage.getItem('username') || '–'; }
+  function getToken() { return localStorage.getItem('token'); }
+
+  // FIX: getDisplayName() prioriza displayName, y NUNCA devuelve el email completo
+  function getDisplayName() {
+    const displayName = localStorage.getItem('displayName');
+    if (displayName && displayName.trim()) return displayName.trim();
+
+    // Fallback: si sólo hay email, mostrar la parte antes del @
+    const username = localStorage.getItem('username') || '';
+    return username.includes('@') ? username.split('@')[0] : (username || '–');
+  }
 
   // ── Modales ───────────────────────────────────────────────────
   function abrirLogin() {
@@ -167,6 +181,7 @@
       document.getElementById('modal-login').classList.remove('hidden');
     } else {
       document.getElementById('modal-login').classList.add('hidden');
+      // FIX: usar getDisplayName() que nunca devuelve el email completo
       document.getElementById('nav-user').textContent = '👤 ' + getDisplayName();
       cargarPregunta();
     }
@@ -189,8 +204,10 @@
       const data = await res.json();
       localStorage.setItem('token', data.token);
       localStorage.setItem('username', username);
-      // Guardar displayName si el backend lo devuelve, sino usar parte antes del @
-      localStorage.setItem('displayName', data.displayName || username.split('@')[0]);
+      // FIX: el backend devuelve displayName; si no, derivarlo del email (nunca guardar email completo como nombre)
+      const nombre = data.displayName || username.split('@')[0];
+      localStorage.setItem('displayName', nombre);
+
       document.getElementById('modal-login').classList.add('hidden');
       document.getElementById('nav-user').textContent = '👤 ' + getDisplayName();
       cargarPregunta();
@@ -243,9 +260,8 @@
     document.getElementById('answer-input').className = 'answer-input';
     document.getElementById('answer-input').disabled = false;
     document.getElementById('btn-enviar').disabled = false;
-    // Ambos botones ocultos al arrancar
-    document.getElementById('btn-pista2').classList.add('hidden');
-    document.getElementById('btn-pista3').classList.add('hidden');
+    ocultarBtn(btnP2);
+    ocultarBtn(btnP3);
 
     if (modoActual === 'pelicula') {
       document.getElementById('game-mode-title').textContent = '🎬 ¿Qué película es?';
@@ -278,8 +294,7 @@
       }
 
       agregarPista(preguntaActual.pista1);
-      // Solo mostrar botón pista 2; pista 3 se muestra SOLO cuando se revela la 2
-      document.getElementById('btn-pista2').classList.remove('hidden');
+      mostrarBtn(btnP2);
       iniciarTimer();
 
     } catch (e) {
@@ -287,22 +302,27 @@
     }
   }
 
+  // ── Helpers visibilidad de botones ────────────────────────────
+  const btnP2 = document.getElementById('btn-pista2');
+  const btnP3 = document.getElementById('btn-pista3');
+
+  function mostrarBtn(btn)  { btn.style.display = ''; }
+  function ocultarBtn(btn)  { btn.style.display = 'none'; }
+
   // ── Pistas ────────────────────────────────────────────────────
-  document.getElementById('btn-pista2').addEventListener('click', () => {
+  btnP2.addEventListener('click', () => {
     if (pistasReveladas >= 2) return;
     agregarPista(preguntaActual.pista2);
     pistasReveladas = 2;
-    // Ocultar este botón, mostrar el de pista 3
-    document.getElementById('btn-pista2').classList.add('hidden');
-    document.getElementById('btn-pista3').classList.remove('hidden');
+    ocultarBtn(btnP2);
+    mostrarBtn(btnP3);
   });
 
-  document.getElementById('btn-pista3').addEventListener('click', () => {
+  btnP3.addEventListener('click', () => {
     if (pistasReveladas >= 3) return;
     agregarPista(preguntaActual.pista3);
     pistasReveladas = 3;
-    // Ocultar definitivamente, no hay más pistas
-    document.getElementById('btn-pista3').classList.add('hidden');
+    ocultarBtn(btnP3);
     showToast('No hay más pistas disponibles', '');
   });
 
@@ -328,8 +348,8 @@
         clearInterval(timerInterval);
         document.getElementById('answer-input').disabled = true;
         document.getElementById('btn-enviar').disabled = true;
-        document.getElementById('btn-pista2').classList.add('hidden');
-        document.getElementById('btn-pista3').classList.add('hidden');
+        ocultarBtn(btnP2);
+        ocultarBtn(btnP3);
         guardarPartida(false);
         setTimeout(() => mostrarResultado(false,
           preguntaActual
@@ -378,8 +398,8 @@
 
     document.getElementById('btn-enviar').disabled = true;
     document.getElementById('answer-input').disabled = true;
-    document.getElementById('btn-pista2').classList.add('hidden');
-    document.getElementById('btn-pista3').classList.add('hidden');
+    ocultarBtn(btnP2);
+    ocultarBtn(btnP3);
     detenerTimer();
 
     try {
@@ -442,6 +462,98 @@
     document.getElementById('toast-container').appendChild(t);
     setTimeout(() => { t.classList.add('removing'); setTimeout(() => t.remove(), 260); }, 2600);
   }
+
+  // ── Autocomplete ────────────────────────────────────────────
+  const answerInput = document.getElementById('answer-input');
+  const dropdown    = document.getElementById('autocomplete-dropdown');
+  let acTimer = null;
+  let acIndex = -1;
+  let acItems = [];
+
+  function cerrarDropdown() {
+    dropdown.style.display = 'none';
+    dropdown.innerHTML = '';
+    acIndex = -1;
+    acItems = [];
+  }
+
+  function resaltarItem(idx) {
+    dropdown.querySelectorAll('.ac-item').forEach((el, i) => {
+      el.style.background = i === idx ? 'var(--green-bg)' : '';
+      el.style.color      = i === idx ? 'var(--green-dark)' : '';
+    });
+  }
+
+  function seleccionarItem(texto) {
+    const nombre = texto.includes(' — ') ? texto.split(' — ')[0] : texto;
+    answerInput.value = nombre;
+    cerrarDropdown();
+    answerInput.focus();
+  }
+
+  function renderDropdown(sugerencias) {
+    dropdown.innerHTML = '';
+    acItems = sugerencias;
+    acIndex = -1;
+    if (sugerencias.length === 0) { cerrarDropdown(); return; }
+    sugerencias.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'ac-item';
+      div.style.cssText = 'padding:.6rem 1rem;font-size:.92rem;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;color:var(--text-dark);';
+      if (i === sugerencias.length - 1) div.style.borderBottom = 'none';
+      div.textContent = s;
+      div.addEventListener('mousedown', e => { e.preventDefault(); seleccionarItem(s); });
+      dropdown.appendChild(div);
+    });
+    dropdown.style.display = 'block';
+  }
+
+  async function buscarSugerencias(q) {
+    if (!preguntaActual || !q || q.length < 2) { cerrarDropdown(); return; }
+    try {
+      const modo = preguntaActual.tipo === 'pelicula' ? 'pelicula' : 'cancion';
+      const res  = await fetch('/api/buscar?q=' + encodeURIComponent(q) + '&modo=' + modo, {
+        headers: { 'Authorization': 'Bearer ' + getToken() }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      renderDropdown(data);
+    } catch (e) {}
+  }
+
+  answerInput.addEventListener('input', () => {
+    clearTimeout(acTimer);
+    const q = answerInput.value.trim();
+    if (q.length < 2) { cerrarDropdown(); return; }
+    acTimer = setTimeout(() => buscarSugerencias(q), 200);
+  });
+
+  answerInput.addEventListener('keydown', e => {
+    if (dropdown.style.display === 'none') return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      acIndex = Math.min(acIndex + 1, acItems.length - 1);
+      resaltarItem(acIndex);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      acIndex = Math.max(acIndex - 1, -1);
+      resaltarItem(acIndex);
+    } else if (e.key === 'Enter' && acIndex >= 0) {
+      e.stopImmediatePropagation();
+      seleccionarItem(acItems[acIndex]);
+    } else if (e.key === 'Escape') {
+      cerrarDropdown();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#autocomplete-wrapper')) cerrarDropdown();
+  });
+
+  new MutationObserver(() => {
+    if (answerInput.disabled) cerrarDropdown();
+  }).observe(answerInput, { attributes: true, attributeFilter: ['disabled'] });
+
 </script>
 
 </body>
