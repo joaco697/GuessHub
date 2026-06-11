@@ -1,0 +1,9 @@
+se necesita
+- java 21
+- gradle 8.14.1
+
+como correrlo 
+
+cd guesshub
+
+./gradlew bootrun
