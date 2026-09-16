@@ -5,13 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * NUNCA incluye el título: la respuesta correcta vive solo en el servidor
+ * (PreguntaActivaService), identificada por "id" (un UUID, no el id de la BD).
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PeliculaDTO {
-    private Long id;
-    private String titulo;
+    private String id;
     private String pista1;
     private String pista2;
     private String pista3;

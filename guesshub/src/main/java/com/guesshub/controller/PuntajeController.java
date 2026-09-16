@@ -1,5 +1,6 @@
 package com.guesshub.controller;
 
+import com.guesshub.dto.MiPosicionDTO;
 import com.guesshub.dto.PartidaDTO;
 import com.guesshub.dto.RankingDTO;
 import com.guesshub.service.PuntajeService;
@@ -38,5 +39,18 @@ public class PuntajeController {
     @GetMapping("/ranking")
     public ResponseEntity<List<RankingDTO>> getRanking() {
         return ResponseEntity.ok(puntajeService.getRanking());
+    }
+
+    /**
+     * GET /api/ranking/mi-posicion
+     * Devuelve la posición real del usuario autenticado, esté o no en el Top 10.
+     */
+    @GetMapping("/ranking/mi-posicion")
+    public ResponseEntity<MiPosicionDTO> getMiPosicion() {
+        try {
+            return ResponseEntity.ok(puntajeService.getMiPosicion());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

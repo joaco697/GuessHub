@@ -176,38 +176,39 @@ window.addEventListener('load', async () => {
   renderLogros();
 });
 
-// ── Cargar ranking y buscar al usuario actual ─────────────────
+// ── Cargar mi posición real (esté o no en el Top 10) ───────────
 async function cargarDatosRanking(myDisplayName) {
+  if (!getToken()) {
+    // Invitado: no tiene partidas guardadas ni posición
+    renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
+    renderBadges({ rankPosition: '–', streakDays: 1 });
+    renderLogros(null);
+    return;
+  }
+
   try {
-    const res = await fetch('/api/ranking');
-    if (!res.ok) return;
-    const data = await res.json();
+    const res = await fetch('/api/ranking/mi-posicion', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!res.ok) throw new Error('No se pudo obtener la posición');
+    const miData = await res.json();
 
-    // Buscar al usuario en el ranking
-    const miPos = data.findIndex(p => p.username === myDisplayName);
-    const miData = miPos !== -1 ? data[miPos] : null;
-
-    // Actualizar stats
-    if (miData) {
-      const precision = miData.partidasJugadas > 0
-        ? Math.round((miData.partidasCorrectas / miData.partidasJugadas) * 100)
-        : 0;
+    if (miData.partidasJugadas > 0) {
+      const precision = Math.round((miData.partidasCorrectas / miData.partidasJugadas) * 100);
 
       renderStats({
         totalScore: miData.puntos,
         gamesPlayed: miData.partidasJugadas,
         accuracy: precision,
-        rankPosition: miPos + 1
+        rankPosition: miData.posicion
       });
 
-      // Actualizar badges con posición real
-      renderBadges({ rankPosition: miPos + 1, streakDays: 1 });
-
-      // Actualizar logros según stats reales
+      renderBadges({ rankPosition: miData.posicion, streakDays: 1 });
       renderLogros(miData);
     } else {
-      // Usuario sin partidas aún
+      // Usuario registrado pero sin partidas aún
       renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
+      renderBadges({ rankPosition: '–', streakDays: 1 });
       renderLogros(null);
     }
 

@@ -1,5 +1,6 @@
 package com.guesshub.service;
 
+import com.guesshub.dto.MiPosicionDTO;
 import com.guesshub.dto.RankingDTO;
 import com.guesshub.entity.Puntaje;
 import com.guesshub.entity.security.Usuario;
@@ -50,6 +51,24 @@ public class PuntajeService {
         log.info("Partida guardada para {}: +{} pts", username, puntosGanados);
 
         return puntosGanados;
+    }
+
+    /**
+     * Posición real del usuario autenticado, aunque esté fuera del Top 10.
+     * Si todavía no jugó ninguna partida, devuelve todo en 0 y sin posición calculable.
+     */
+    public MiPosicionDTO getMiPosicion() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return puntajeRepository.findByUsuarioId(usuario.getId())
+                .map(p -> new MiPosicionDTO(
+                        puntajeRepository.findPosicion(usuario.getId()),
+                        p.getPuntos(),
+                        p.getPartidasJugadas(),
+                        p.getPartidasCorrectas()))
+                .orElse(new MiPosicionDTO(0, 0, 0, 0));
     }
 
     /**

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GuessHub</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div class="phone-frame">
+
+  <nav class="navbar">
+    <div class="nav-logo">
+      <span>🏆</span>
+      Guess<span class="logo-green">Hub</span>
+    </div>
+    <div class="nav-right">
+      <button class="btn-ingresar" id="btn-ingresar">Ingresar</button>
+      <button class="avatar-btn" id="btn-avatar">👤</button>
+    </div>
+  </nav>
+
+  <div class="screen">
+    <div class="page-inner">
+
+      <!-- Desafío del día -->
+      <div class="desafio-card">
+        <div class="desafio-header">
+          <span class="streak-chip" id="streak-chip">🔥 <span id="streak-days">–</span> días</span>
+          <span style="font-size:1.6rem">👑</span>
+        </div>
+        <div class="desafio-label">Desafío del día</div>
+        <div class="desafio-title">¡Adivina películas y canciones!</div>
+        <div class="desafio-sub">Usá las pistas y subí en el ranking</div>
+
+        <button class="btn-green" id="btn-jugar-desafio">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          JUGAR AHORA
+        </button>
+
+        <!-- Top 3 -->
+        <div class="top3-box">
+          <div class="top3-title"><span>👑</span> Top 3 Global</div>
+          <div id="top3-list">
+            <div class="top3-row">
+              <span class="top3-medal">🥇</span>
+              <span class="top3-name" style="color:var(--border)">Cargando...</span>
+              <span class="top3-pts" style="color:var(--border)">–</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categorías -->
+      <div class="section-title">Categorías</div>
+      <div class="cat-grid">
+        <div class="cat-card green anim-fade-up" style="animation-delay:.05s" data-category="peliculas">
+          <span class="cat-icon-main">🎬</span>
+          <span class="cat-icon-bg">🎞️</span>
+          <span class="cat-name">Películas</span>
+        </div>
+        <div class="cat-card yellow anim-fade-up" style="animation-delay:.1s" data-category="musica">
+          <span class="cat-icon-main">🎵</span>
+          <span class="cat-icon-bg">🎶</span>
+          <span class="cat-name">Música</span>
+        </div>
+        <div class="cat-card green anim-fade-up" style="animation-delay:.15s" data-category="deportes">
+          <span class="cat-icon-main">⚽</span>
+          <span class="cat-icon-bg">🏅</span>
+          <span class="cat-name">Deportes</span>
+        </div>
+        <div class="cat-card yellow anim-fade-up" style="animation-delay:.2s" data-category="random">
+          <span class="cat-icon-main">🎲</span>
+          <span class="cat-icon-bg">🔀</span>
+          <span class="cat-name">Random</span>
+        </div>
+      </div>
+
+      <!-- Ranking Global -->
+      <div class="section-title"><span>🏆</span> Ranking Global</div>
+      <div class="card" id="ranking-home">
+        <div style="text-align:center;color:var(--text-light);padding:1rem">Cargando...</div>
+      </div>
+
+      <!-- Logros -->
+      <div class="section-title"><span>🏅</span> Logros</div>
+      <div class="achievements-scroll" id="logros-home">
+        <div class="ach-item"><div class="ach-icon">🎬</div><div class="ach-name">Cinéfilo</div></div>
+        <div class="ach-item"><div class="ach-icon">🎵</div><div class="ach-name">Melómano</div></div>
+        <div class="ach-item locked"><div class="ach-icon">🏆</div><div class="ach-name">Top 10</div></div>
+        <div class="ach-item locked"><div class="ach-icon">🔥</div><div class="ach-name">Racha x5</div></div>
+        <div class="ach-item locked"><div class="ach-icon">⚡</div><div class="ach-name">Velocista</div></div>
+      </div>
+
+      <div style="height:.5rem"></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="bn-item active" onclick="location.href='/'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Inicio
+    </button>
+    <button class="bn-item" onclick="location.href='/ranking'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 20h2V8H7v12zm2-18H7v2h2V2zm4 18h2V4h-2v16zm6 0h2v-8h-2v8zm0-10h2V8h-2v2z"/></svg>
+      Ranking
+    </button>
+    <button class="bn-item" onclick="location.href='/game'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      Jugar
+    </button>
+    <button class="bn-item" onclick="location.href='/perfil'">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      Perfil
+    </button>
+  </nav>
+
+</div>
+
+<script>
+  const medals = ['🥇','🥈','🥉'];
+  const circles = ['c1','c2','c3','cn','cn','cn','cn','cn','cn','cn'];
+
+  // ── Navegación ────────────────────────────────────────────────
+  // Cada card pasa su categoría por query param; /game la lee y arma la partida acorde
+  document.querySelectorAll('.cat-card').forEach(card => {
+    card.addEventListener('click', () => location.href = '/game?cat=' + card.dataset.category);
+  });
+  document.getElementById('btn-jugar-desafio').addEventListener('click', () => location.href = '/game?cat=random');
+  document.getElementById('btn-avatar').addEventListener('click', () => location.href = '/perfil');
+
+  // Mostrar nombre si está logueado
+  const displayName = localStorage.getItem('displayName');
+  if (displayName) {
+    document.getElementById('btn-ingresar').textContent = '👤 ' + displayName;
+    document.getElementById('btn-ingresar').onclick = () => location.href = '/perfil';
+  } else {
+    document.getElementById('btn-ingresar').onclick = () => location.href = '/game#login';
+  }
+
+  // ── Cargar ranking desde la API ───────────────────────────────
+  async function cargarRankingHome() {
+    try {
+      const res = await fetch('/api/ranking');
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Top 3 en la card de desafío
+      const top3El = document.getElementById('top3-list');
+      top3El.innerHTML = '';
+      data.slice(0, 3).forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'top3-row';
+        div.innerHTML = `
+          <span class="top3-medal">${medals[i]}</span>
+          <span class="top3-name">${p.username}</span>
+          <span class="top3-pts">${Number(p.puntos).toLocaleString()}</span>
+        `;
+        top3El.appendChild(div);
+      });
+
+      // Ranking completo en la card de abajo
+      const rankEl = document.getElementById('ranking-home');
+      rankEl.innerHTML = '';
+      data.forEach((p, i) => {
+        const row = document.createElement('div');
+        row.className = 'lb-row' + (i < 3 ? ' top3' : '');
+        row.style.marginBottom = '.3rem';
+        row.innerHTML = `
+          <div class="lb-num-circle ${circles[i] || 'cn'}">${medals[i] || i + 1}</div>
+          <span class="lb-name">${p.username}</span>
+          <div style="text-align:right">
+            <div class="lb-score">${Number(p.puntos).toLocaleString()} pts</div>
+            <div style="font-size:.72rem;color:var(--text-light)">${p.partidasJugadas} partidas</div>
+          </div>
+        `;
+        rankEl.appendChild(row);
+      });
+
+    } catch (e) {
+      document.getElementById('ranking-home').innerHTML =
+        '<div style="text-align:center;color:var(--text-light);padding:1rem">Sin datos</div>';
+    }
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => { t.classList.add('removing'); setTimeout(() => t.remove(), 260); }, 2600);
+  }
+
+  cargarRankingHome();
+</script>
+
+</body>
+</html>

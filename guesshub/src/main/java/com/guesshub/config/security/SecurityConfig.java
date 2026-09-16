@@ -47,9 +47,12 @@ public class SecurityConfig {
                         // Random y respuesta películas: cualquier usuario autenticado
                         .requestMatchers(HttpMethod.GET, "/api/random").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pelicula/random").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/pelicula/respuesta").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/respuesta").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/partida").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ranking").permitAll()
+
+                        // Categoría Deportes: se juega igual que película/canción, incluso como invitado
+                        .requestMatchers(HttpMethod.GET, "/equipo/random").permitAll()
 
                         // Productos y mascotas — solo ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")

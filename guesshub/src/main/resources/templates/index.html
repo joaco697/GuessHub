@@ -125,10 +125,11 @@
   const circles = ['c1','c2','c3','cn','cn','cn','cn','cn','cn','cn'];
 
   // ── Navegación ────────────────────────────────────────────────
+  // Cada card pasa su categoría por query param; /game la lee y arma la partida acorde
   document.querySelectorAll('.cat-card').forEach(card => {
-    card.addEventListener('click', () => location.href = '/game');
+    card.addEventListener('click', () => location.href = '/game?cat=' + card.dataset.category);
   });
-  document.getElementById('btn-jugar-desafio').addEventListener('click', () => location.href = '/game');
+  document.getElementById('btn-jugar-desafio').addEventListener('click', () => location.href = '/game?cat=random');
   document.getElementById('btn-avatar').addEventListener('click', () => location.href = '/perfil');
 
   // Mostrar nombre si está logueado

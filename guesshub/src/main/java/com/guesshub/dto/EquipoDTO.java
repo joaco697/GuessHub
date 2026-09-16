@@ -5,18 +5,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * NUNCA incluye el nombre del equipo: la respuesta correcta vive solo en
+ * el servidor (PreguntaActivaService), identificada por "id" (UUID).
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class EquipoDTO {
-
-    private int id;
-    private String nombre;
+    private String id;
     private String pais;
     private int fundacion;
     private String logo;
     private String estadio;
     private String ciudad;
-
 }

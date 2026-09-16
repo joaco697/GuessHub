@@ -153,6 +153,21 @@
   let segundosUsados = 0;
   const TIEMPO_MAX = 60;
 
+  // Categoría elegida desde el home: peliculas | musica | deportes | random (o vacío = random)
+  const categoriaFija = new URLSearchParams(location.search).get('cat') || 'random';
+  const MODOS = ['pelicula', 'cancion', 'equipo'];
+
+  function elegirModo() {
+    if (categoriaFija === 'peliculas') return 'pelicula';
+    if (categoriaFija === 'musica') return 'cancion';
+    if (categoriaFija === 'deportes') return 'equipo';
+    // Random: mezcla las 3 categorías, evitando repetir la misma dos veces seguidas
+    let siguiente;
+    do { siguiente = MODOS[Math.floor(Math.random() * MODOS.length)]; }
+    while (siguiente === modoActual);
+    return siguiente;
+  }
+
   function getToken() { return localStorage.getItem('token'); }
 
   // FIX: getDisplayName() prioriza displayName, y NUNCA devuelve el email completo
@@ -246,7 +261,7 @@
 
   // ── Cargar pregunta ───────────────────────────────────────────
   async function cargarPregunta() {
-    modoActual = modoActual === 'pelicula' ? 'cancion' : 'pelicula';
+    modoActual = elegirModo();
 
     // Reset completo
     pistasReveladas = 1;
@@ -264,16 +279,21 @@
       document.getElementById('game-mode-badge').textContent = 'Películas';
       document.getElementById('btn-pista2').textContent = '💡 Ver pista 2: Director';
       document.getElementById('btn-pista3').textContent = '💡 Ver pista 3: Año';
-    } else {
+    } else if (modoActual === 'cancion') {
       document.getElementById('game-mode-title').textContent = '🎵 ¿Qué canción es?';
       document.getElementById('game-mode-badge').textContent = 'Música';
       document.getElementById('btn-pista2').textContent = '💡 Ver pista 2: Álbum';
       document.getElementById('btn-pista3').textContent = '💡 Ver pista 3: Año';
+    } else {
+      document.getElementById('game-mode-title').textContent = '⚽ ¿Qué equipo es?';
+      document.getElementById('game-mode-badge').textContent = 'Deportes';
+      document.getElementById('btn-pista2').textContent = '💡 Ver pista 2: Año de fundación';
+      document.getElementById('btn-pista3').textContent = '💡 Ver pista 3: Estadio';
     }
 
     try {
-      const endpoint = modoActual === 'pelicula' ? '/api/pelicula/random' : '/api/random';
-      const res = await fetch(endpoint, {
+      const endpoints = { pelicula: '/api/pelicula/random', cancion: '/api/random', equipo: '/equipo/random' };
+      const res = await fetch(endpoints[modoActual], {
         headers: { 'Authorization': 'Bearer ' + getToken() }
       });
 
@@ -284,9 +304,18 @@
 
       if (modoActual === 'pelicula') {
         preguntaActual = { id: data.id, tipo: 'pelicula', pista1: data.pista1, pista2: data.pista2, pista3: data.pista3 };
-      } else {
+      } else if (modoActual === 'cancion') {
         const cancion = Array.isArray(data) ? data[0] : data;
-        preguntaActual = { tipo: 'cancion', nombre: cancion.nombre, pista1: cancion.pista1, pista2: cancion.pista2, pista3: cancion.pista3 };
+        preguntaActual = { id: cancion.id, tipo: 'cancion', pista1: cancion.pista1, pista2: cancion.pista2, pista3: cancion.pista3 };
+      } else {
+        const equipo = Array.isArray(data) ? data[0] : data;
+        preguntaActual = {
+          id: equipo.id,
+          tipo: 'equipo',
+          pista1: 'País: ' + equipo.pais,
+          pista2: 'Fundado en: ' + equipo.fundacion,
+          pista3: 'Estadio: ' + equipo.estadio
+        };
       }
 
       agregarPista(preguntaActual.pista1);
@@ -346,11 +375,7 @@
         document.getElementById('btn-enviar').disabled = true;
         ocultarBtn(btnP2);
         ocultarBtn(btnP3);
-        guardarPartida(false);
-        setTimeout(() => mostrarResultado(false,
-          preguntaActual
-            ? (preguntaActual.tipo === 'pelicula' ? '(tiempo agotado)' : preguntaActual.nombre)
-            : '(tiempo agotado)'), 400);
+        manejarTiempoAgotado();
       }
     }, 1000);
   }
@@ -369,6 +394,32 @@
   }
 
   function detenerTimer() { clearInterval(timerInterval); }
+
+  // ── Validación server-side (única para las 3 categorías) ───────
+  // El servidor es el único que conoce la respuesta correcta; el cliente
+  // nunca la tiene hasta que este endpoint la devuelve.
+  async function validarEnServidor(respuesta) {
+    const res = await fetch('/api/respuesta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preguntaId: preguntaActual.id, respuesta })
+    });
+    return res.json();
+  }
+
+  async function manejarTiempoAgotado() {
+    if (!preguntaActual) { mostrarResultado(false, '(tiempo agotado)'); return; }
+    try {
+      // Mandamos una respuesta vacía solo para que el servidor revele la
+      // correcta y cierre la pregunta — nunca la tuvimos en el cliente.
+      const resultado = await validarEnServidor('');
+      await guardarPartida(false);
+      setTimeout(() => mostrarResultado(false, resultado.tituloCorrecto), 400);
+    } catch (e) {
+      await guardarPartida(false);
+      setTimeout(() => mostrarResultado(false, '(tiempo agotado)'), 400);
+    }
+  }
 
   // ── Guardar partida ───────────────────────────────────────────
   async function guardarPartida(correcto) {
@@ -400,20 +451,7 @@
     detenerTimer();
 
     try {
-      let resultado;
-
-      if (preguntaActual.tipo === 'pelicula') {
-        const res = await fetch('/api/pelicula/respuesta', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
-          body: JSON.stringify({ peliculaId: preguntaActual.id, respuesta })
-        });
-        resultado = await res.json();
-      } else {
-        const normalizar = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-        const correcto = normalizar(respuesta) === normalizar(preguntaActual.nombre);
-        resultado = { correcto, tituloCorrecto: preguntaActual.nombre };
-      }
+      const resultado = await validarEnServidor(respuesta);
 
       const input = document.getElementById('answer-input');
 
@@ -512,7 +550,8 @@
   }
 
   async function buscarSugerencias(q) {
-    if (!preguntaActual || !q || q.length < 2) { cerrarDropdown(); return; }
+    // Deportes no tiene autocomplete: los equipos vienen de una API externa, no de nuestra BD
+    if (!preguntaActual || !q || q.length < 2 || preguntaActual.tipo === 'equipo') { cerrarDropdown(); return; }
     try {
       const modo = preguntaActual.tipo === 'pelicula' ? 'pelicula' : 'cancion';
       const res  = await fetch('/api/buscar?q=' + encodeURIComponent(q) + '&modo=' + modo, {
