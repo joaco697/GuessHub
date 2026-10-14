@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.guesshub.controller.ControllersTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-14T22:37:24.330Z" hostname="MacBook-Pro-de-joaquin.local" time="0.31">
+  <properties/>
+  <testcase name="futbolControllerDevuelveListaEquipos()" classname="com.guesshub.controller.ControllersTest" time="0.295"/>
+  <testcase name="cancionControllerDevuelveListaCanciones()" classname="com.guesshub.controller.ControllersTest" time="0.007"/>
+  <testcase name="adminControllerDevuelveStatusLive()" classname="com.guesshub.controller.ControllersTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

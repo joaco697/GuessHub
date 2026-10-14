@@ -16,12 +16,10 @@ public record RegistrarDTO(
         String displayName,
 
         @NotBlank(message = "La contraseña es requerida")
-        @Pattern(regexp = "^.{8,}$",
-                 message = "La contraseña debe tener al menos 8 caracteres")
+        @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
         String password,
 
         @NotBlank(message = "La verificación de contraseña es requerida")
-        @Pattern(regexp = "^.{8,}$",
-                 message = "La verificación de contraseña debe tener al menos 8 caracteres")
+        @Size(min = 8, message = "La verificación de contraseña debe tener al menos 8 caracteres")
         String verificacionPassword) {
 }

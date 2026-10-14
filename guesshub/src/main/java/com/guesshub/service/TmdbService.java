@@ -23,6 +23,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class TmdbService {
 
     private final PeliculaRepository peliculaRepository;
+    private final HttpClient httpClient;
 
     @Value("${tmdb.api.key}")
     private String apiKey;
@@ -45,7 +46,7 @@ public class TmdbService {
                 + "&language=es-AR&page=" + pagina;
 
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
-        HttpResponse<String> response = HttpClient.newHttpClient()
+        HttpResponse<String> response = httpClient
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
         JSONObject json = new JSONObject(response.body());
@@ -70,7 +71,6 @@ public class TmdbService {
      */
     public int syncTop100() throws Exception {
         List<Pelicula> toSave = new ArrayList<>();
-        HttpClient client = HttpClient.newHttpClient();
 
         for (int page = 1; page <= 5; page++) {
             String url = apiUrl + "/movie/top_rated?api_key=" + apiKey
@@ -81,7 +81,7 @@ public class TmdbService {
                     .GET()
                     .build();
 
-            HttpResponse<String> response = client.send(request,
+            HttpResponse<String> response = httpClient.send(request,
                     HttpResponse.BodyHandlers.ofString());
 
             JSONObject json = new JSONObject(response.body());

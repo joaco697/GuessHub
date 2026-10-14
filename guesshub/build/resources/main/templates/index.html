@@ -18,7 +18,7 @@
       Guess<span class="logo-green">Hub</span>
     </div>
     <div class="nav-right">
-      <button class="btn-ingresar" id="btn-ingresar">Ingresar</button>
+      <button class="btn-ingresar" id="btn-ingresar" onclick="location.href='/game#login'">Ingresar</button>
       <button class="avatar-btn" id="btn-avatar">👤</button>
     </div>
   </nav>
@@ -57,22 +57,22 @@
       <!-- Categorías -->
       <div class="section-title">Categorías</div>
       <div class="cat-grid">
-        <div class="cat-card green anim-fade-up" style="animation-delay:.05s" data-category="peliculas">
+        <div class="cat-card green anim-fade-up" style="animation-delay:.05s;cursor:pointer" data-category="peliculas" onclick="location.href='/game?cat=peliculas'">
           <span class="cat-icon-main">🎬</span>
           <span class="cat-icon-bg">🎞️</span>
           <span class="cat-name">Películas</span>
         </div>
-        <div class="cat-card yellow anim-fade-up" style="animation-delay:.1s" data-category="musica">
+        <div class="cat-card yellow anim-fade-up" style="animation-delay:.1s;cursor:pointer" data-category="musica" onclick="location.href='/game?cat=musica'">
           <span class="cat-icon-main">🎵</span>
           <span class="cat-icon-bg">🎶</span>
           <span class="cat-name">Música</span>
         </div>
-        <div class="cat-card green anim-fade-up" style="animation-delay:.15s" data-category="deportes">
+        <div class="cat-card green anim-fade-up" style="animation-delay:.15s;cursor:pointer" data-category="deportes" onclick="location.href='/game?cat=deportes'">
           <span class="cat-icon-main">⚽</span>
           <span class="cat-icon-bg">🏅</span>
           <span class="cat-name">Deportes</span>
         </div>
-        <div class="cat-card yellow anim-fade-up" style="animation-delay:.2s" data-category="random">
+        <div class="cat-card yellow anim-fade-up" style="animation-delay:.2s;cursor:pointer" data-category="random" onclick="location.href='/game?cat=random'">
           <span class="cat-icon-main">🎲</span>
           <span class="cat-icon-bg">🔀</span>
           <span class="cat-name">Random</span>
@@ -133,11 +133,13 @@
   document.getElementById('btn-avatar').addEventListener('click', () => location.href = '/perfil');
 
   // Mostrar nombre si está logueado
+  const token = localStorage.getItem('token');
   const displayName = localStorage.getItem('displayName');
-  if (displayName) {
+  if (token && displayName) {
     document.getElementById('btn-ingresar').textContent = '👤 ' + displayName;
     document.getElementById('btn-ingresar').onclick = () => location.href = '/perfil';
   } else {
+    document.getElementById('btn-ingresar').textContent = 'Ingresar';
     document.getElementById('btn-ingresar').onclick = () => location.href = '/game#login';
   }
 

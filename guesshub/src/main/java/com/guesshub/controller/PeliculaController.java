@@ -10,6 +10,10 @@ import com.guesshub.service.PeliculaService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Controller para la categoría Películas.
+ * La validación de respuestas se centraliza en {@link RespuestaController} (/api/respuesta).
+ */
 @RestController
 @RequestMapping("/api/pelicula")
 @RequiredArgsConstructor

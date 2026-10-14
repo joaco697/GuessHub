@@ -18,7 +18,7 @@ import com.guesshub.service.security.UsuarioService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/equipo/usuarios")
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;

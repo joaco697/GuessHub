@@ -154,6 +154,9 @@ window.addEventListener('load', async () => {
   if (getToken()) {
     btnIngresar.textContent = '👤 ' + displayName;
     btnIngresar.onclick = null;
+  } else {
+    btnIngresar.textContent = 'Ingresar';
+    btnIngresar.onclick = () => location.href = '/game#login';
   }
 
   // Avatar: primera letra del displayName

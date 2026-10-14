@@ -1,6 +1,5 @@
 package com.guesshub.util;
 
-import java.util.regex.Pattern;
 
 /**
  * Clase utilitaria para la validación de contraseñas.
@@ -8,7 +7,6 @@ import java.util.regex.Pattern;
  */
 public class PasswordValidator {
     
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^.{8,}$");
     private static final String PASSWORD_MESSAGE = "La contraseña debe tener al menos 8 caracteres";
     /**
      * Valida si una contraseña cumple con los requisitos de seguridad.
@@ -17,7 +15,7 @@ public class PasswordValidator {
      * @return true si la contraseña es válida, false en caso contrario
      */
     public static boolean isValid(String password) {
-        return password != null && PASSWORD_PATTERN.matcher(password).matches();
+        return password != null && password.length() >= 8;
     }
     
     /**
