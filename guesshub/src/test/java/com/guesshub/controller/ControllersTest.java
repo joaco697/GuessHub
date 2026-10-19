@@ -76,4 +76,20 @@ class ControllersTest {
         assertNotNull(response.getBody());
         assertEquals("LIVE_API", response.getBody().get("modoJuego"));
     }
+
+    @Test
+    void buscarControllerVacioSiQueryMenorADosChars() {
+        BuscarController buscarController = new BuscarController(null, null, null);
+        ResponseEntity<List<String>> res = buscarController.buscar("a", "pelicula");
+        assertEquals(200, res.getStatusCode().value());
+        assertTrue(res.getBody().isEmpty());
+    }
+
+    @Test
+    void buscarControllerEncuentraEquiposPopulares() {
+        BuscarController buscarController = new BuscarController(null, null, null);
+        ResponseEntity<List<String>> res = buscarController.buscar("Boca", "equipo");
+        assertEquals(200, res.getStatusCode().value());
+        assertTrue(res.getBody().contains("Boca Juniors"));
+    }
 }

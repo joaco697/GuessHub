@@ -163,13 +163,10 @@ window.addEventListener('load', async () => {
     username ? '@' + username.split('@')[0] : '@' + displayName.toLowerCase();
 
   // Badges base (sin datos de ranking todavía)
-  renderBadges({ rankPosition: '–', streakDays: 1 });
+  renderBadges({ rankPosition: '–', streakDays: 0 });
 
-  // Cargar datos reales desde la API de ranking
+  // Cargar datos reales desde la API de ranking (stats, badges, logros y categorías)
   await cargarDatosRanking(displayName);
-
-  // FIX: renderizar logros reales
-  renderLogros();
 });
 
 // ── Cargar mi posición real (esté o no en el Top 10) ───────────
@@ -177,7 +174,7 @@ async function cargarDatosRanking(myDisplayName) {
   if (!getToken()) {
     // Invitado: no tiene partidas guardadas ni posición
     renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
-    renderBadges({ rankPosition: '–', streakDays: 1 });
+    renderBadges({ rankPosition: '–', streakDays: 0 });
     renderLogros(null);
     return;
   }
@@ -295,38 +292,41 @@ function renderLogros(userData) {
   const correctas     = userData ? userData.partidasCorrectas : 0;
   const puntos        = userData ? userData.puntos            : 0;
   const racha         = userData ? (userData.rachaDias || 0)  : 0;
+  const pelis         = userData ? (userData.puntosPeliculas || 0) : 0;
+  const musica        = userData ? (userData.puntosMusica || 0)    : 0;
+  const deportes      = userData ? (userData.puntosDeportes || 0)  : 0;
   const precision     = partidas > 0 ? correctas / partidas : 0;
 
   const achievements = [
     {
       icon: '🔥', name: 'Chispa',
       unlocked: racha >= 3,
-      desc: '3 días de racha consecutiva'
+      desc: 'Alcanzar 3 días de racha consecutiva'
     },
     {
       icon: '⚡', name: 'Imparable',
       unlocked: racha >= 7,
-      desc: '7 días de racha consecutiva'
+      desc: 'Alcanzar 7 días de racha consecutiva'
     },
     {
       icon: '👑', name: 'Leyenda',
       unlocked: racha >= 30,
-      desc: '30 días de racha consecutiva'
+      desc: 'Alcanzar 30 días de racha consecutiva'
     },
     {
       icon: '🎬', name: 'Cinéfilo',
-      unlocked: partidas >= 1,
-      desc: 'Jugar al menos 1 partida'
+      unlocked: pelis > 0,
+      desc: 'Adivinar y sumar puntos en Películas'
     },
     {
       icon: '🎵', name: 'Melómano',
-      unlocked: partidas >= 5,
-      desc: 'Jugar 5 partidas'
+      unlocked: musica > 0,
+      desc: 'Adivinar y sumar puntos en Música'
     },
     {
-      icon: '🏆', name: 'Top 10',
-      unlocked: userData !== null && puntos > 0,
-      desc: 'Aparecer en el ranking'
+      icon: '⚽', name: 'Goleador',
+      unlocked: deportes > 0,
+      desc: 'Adivinar y sumar puntos en Deportes'
     },
     {
       icon: '🎯', name: 'Certero',
@@ -336,12 +336,12 @@ function renderLogros(userData) {
     {
       icon: '🌟', name: 'Mil puntos',
       unlocked: puntos >= 1000,
-      desc: 'Acumular 1000 puntos'
+      desc: 'Acumular 1.000 puntos'
     },
     {
       icon: '💎', name: 'Maestro',
       unlocked: puntos >= 5000,
-      desc: 'Acumular 5000 puntos'
+      desc: 'Acumular 5.000 puntos'
     },
   ];
 

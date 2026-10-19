@@ -572,17 +572,18 @@
     }
 
     async function buscarSugerencias(q) {
-      // Deportes no tiene autocomplete: los equipos vienen de una API externa, no de nuestra BD
-      if (!preguntaActual || !q || q.length < 2 || preguntaActual.tipo === 'equipo') {
+      if (!q || q.length < 2) {
         cerrarDropdown(); return;
       }
       try {
-        const modo = preguntaActual.tipo === 'pelicula' ? 'pelicula' : 'cancion';
-        const res = await fetch('/api/buscar?q=' + encodeURIComponent(q) + '&modo=' + modo);
+        const modo = (preguntaActual && preguntaActual.tipo) ? preguntaActual.tipo : modoActual;
+        const res = await fetch('/api/buscar?q=' + encodeURIComponent(q) + '&modo=' + encodeURIComponent(modo));
         if (!res.ok) return;
         const data = await res.json();
         renderDropdown(data);
-      } catch (e) { }
+      } catch (e) {
+        console.error('Error al buscar sugerencias:', e);
+      }
     }
 
     answerInput.addEventListener('input', () => {
