@@ -20,12 +20,13 @@ public class PuntajeController {
 
     /**
      * POST /api/partida
-     * Guarda el resultado de una partida y devuelve los puntos ganados.
+     * Guarda el resultado de una partida y devuelve los puntos ganados + racha actual.
      */
     @PostMapping("/partida")
     public ResponseEntity<Map<String, Object>> guardarPartida(@RequestBody PartidaDTO dto) {
         try {
-            int puntos = puntajeService.guardarPartida(dto.correcto(), dto.pistasUsadas(), dto.segundosUsados());
+            int puntos = puntajeService.guardarPartida(
+                    dto.correcto(), dto.pistasUsadas(), dto.segundosUsados(), dto.categoria());
             return ResponseEntity.ok(Map.of("puntosGanados", puntos));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
@@ -33,12 +34,18 @@ public class PuntajeController {
     }
 
     /**
-     * GET /api/ranking
-     * Devuelve el top 10 global.
+     * GET /api/ranking?cat=global|peliculas|musica|deportes
+     * Devuelve el top 10. Sin parámetro o cat=global → ranking global.
      */
     @GetMapping("/ranking")
-    public ResponseEntity<List<RankingDTO>> getRanking() {
-        return ResponseEntity.ok(puntajeService.getRanking());
+    public ResponseEntity<List<RankingDTO>> getRanking(
+            @RequestParam(value = "cat", defaultValue = "global") String cat) {
+        return switch (cat.toLowerCase()) {
+            case "peliculas", "pelicula" -> ResponseEntity.ok(puntajeService.getRankingPeliculas());
+            case "musica", "cancion"     -> ResponseEntity.ok(puntajeService.getRankingMusica());
+            case "deportes", "equipo"    -> ResponseEntity.ok(puntajeService.getRankingDeportes());
+            default                      -> ResponseEntity.ok(puntajeService.getRanking());
+        };
     }
 
     /**

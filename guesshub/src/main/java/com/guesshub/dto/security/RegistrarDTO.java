@@ -11,7 +11,7 @@ public record RegistrarDTO(
         String username,
 
         @NotBlank(message = "El nombre visible es requerido")
-        @Size(min = 3, max = 25, message = "El nombre visible debe tener entre 3 y 25 caracteres")
+        @Size(min = 5, max = 15, message = "El nombre visible debe tener entre 5 y 15 caracteres")
         @Pattern(regexp = "^[a-zA-Z0-9_\\-\\.]+$", message = "El nombre visible solo puede tener letras, números, _, - y .")
         String displayName,
 

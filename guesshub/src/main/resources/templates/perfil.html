@@ -58,16 +58,9 @@
 
       <!-- Categorías favoritas -->
       <div class="card">
-        <div style="font-weight:900;font-size:1rem;margin-bottom:1rem">Categorías jugadas</div>
-        <div style="display:flex;flex-direction:column;gap:.85rem">
-          <div class="cat-progress-row">
-            <div class="cat-progress-header"><span>🎬 Películas</span><span>50%</span></div>
-            <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
-          </div>
-          <div class="cat-progress-row">
-            <div class="cat-progress-header"><span>🎵 Música</span><span>50%</span></div>
-            <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
-          </div>
+        <div style="font-weight:900;font-size:1rem;margin-bottom:1rem">Puntos por categoría</div>
+        <div id="categorias-container" style="display:flex;flex-direction:column;gap:.85rem">
+          <div style="color:var(--text-light);font-size:.85rem">Sin partidas registradas</div>
         </div>
       </div>
 
@@ -206,19 +199,23 @@ async function cargarDatosRanking(myDisplayName) {
         rankPosition: miData.posicion
       });
 
-      renderBadges({ rankPosition: miData.posicion, streakDays: 1 });
+      renderBadges({ rankPosition: miData.posicion, streakDays: miData.rachaDias || 0 });
       renderLogros(miData);
+      renderCategorias(miData);
     } else {
       // Usuario registrado pero sin partidas aún
       renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
-      renderBadges({ rankPosition: '–', streakDays: 1 });
+      renderBadges({ rankPosition: '–', streakDays: 0 });
       renderLogros(null);
+      renderCategorias(null);
     }
 
   } catch (e) {
     console.error('Error cargando ranking:', e);
     renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
+    renderBadges({ rankPosition: '–', streakDays: 0 });
     renderLogros(null);
+    renderCategorias(null);
   }
 }
 
@@ -228,7 +225,7 @@ function renderBadges({ rankPosition, streakDays }) {
   badges.innerHTML = '';
   const badgeData = [
     { text: '🎮 Activo',                   cls: 'pill pill-green-outline' },
-    { text: `🔥 Racha x${streakDays}`,     cls: 'pill pill-orange' },
+    { text: `🔥 Racha ${streakDays}d`,     cls: streakDays > 0 ? 'pill pill-orange' : 'pill pill-green-outline' },
     { text: `🌍 Ranking #${rankPosition}`, cls: 'pill pill-green-outline' },
   ];
   badgeData.forEach(b => {
@@ -238,6 +235,39 @@ function renderBadges({ rankPosition, streakDays }) {
     span.textContent = b.text;
     badges.appendChild(span);
   });
+}
+
+// ── renderCategorias ──────────────────────────────────────────
+function renderCategorias(userData) {
+  const container = document.getElementById('categorias-container');
+  if (!userData || userData.puntos === 0) {
+    container.innerHTML = `<div style="color:var(--text-light);font-size:.85rem">Sin partidas registradas</div>`;
+    return;
+  }
+
+  const pelis = userData.puntosPeliculas || 0;
+  const musica = userData.puntosMusica || 0;
+  const deportes = userData.puntosDeportes || 0;
+  const total = Math.max(1, pelis + musica + deportes);
+
+  const pPelis = Math.round((pelis / total) * 100);
+  const pMusica = Math.round((musica / total) * 100);
+  const pDeportes = Math.round((deportes / total) * 100);
+
+  container.innerHTML = `
+    <div class="cat-progress-row">
+      <div class="cat-progress-header"><span>🎬 Películas (${pelis} pts)</span><span>${pPelis}%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pPelis}%"></div></div>
+    </div>
+    <div class="cat-progress-row">
+      <div class="cat-progress-header"><span>🎵 Música (${musica} pts)</span><span>${pMusica}%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pMusica}%"></div></div>
+    </div>
+    <div class="cat-progress-row">
+      <div class="cat-progress-header"><span>⚽ Deportes (${deportes} pts)</span><span>${pDeportes}%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pDeportes}%"></div></div>
+    </div>
+  `;
 }
 
 // ── renderStats ───────────────────────────────────────────────
@@ -264,9 +294,25 @@ function renderLogros(userData) {
   const partidas      = userData ? userData.partidasJugadas   : 0;
   const correctas     = userData ? userData.partidasCorrectas : 0;
   const puntos        = userData ? userData.puntos            : 0;
+  const racha         = userData ? (userData.rachaDias || 0)  : 0;
   const precision     = partidas > 0 ? correctas / partidas : 0;
 
   const achievements = [
+    {
+      icon: '🔥', name: 'Chispa',
+      unlocked: racha >= 3,
+      desc: '3 días de racha consecutiva'
+    },
+    {
+      icon: '⚡', name: 'Imparable',
+      unlocked: racha >= 7,
+      desc: '7 días de racha consecutiva'
+    },
+    {
+      icon: '👑', name: 'Leyenda',
+      unlocked: racha >= 30,
+      desc: '30 días de racha consecutiva'
+    },
     {
       icon: '🎬', name: 'Cinéfilo',
       unlocked: partidas >= 1,
@@ -288,22 +334,12 @@ function renderLogros(userData) {
       desc: '70%+ de precisión (mín. 3 partidas)'
     },
     {
-      icon: '⚡', name: 'Velocista',
-      unlocked: correctas >= 3,
-      desc: '3 respuestas correctas'
-    },
-    {
-      icon: '💎', name: 'Veterano',
-      unlocked: partidas >= 10,
-      desc: '10 partidas jugadas'
-    },
-    {
       icon: '🌟', name: 'Mil puntos',
       unlocked: puntos >= 1000,
       desc: 'Acumular 1000 puntos'
     },
     {
-      icon: '👑', name: 'Maestro',
+      icon: '💎', name: 'Maestro',
       unlocked: puntos >= 5000,
       desc: 'Acumular 5000 puntos'
     },

@@ -40,7 +40,7 @@ public class Usuario {
     private String password;
 
     // Nombre visible en ranking y perfil (elegido al registrarse)
-    @Column(name = "display_name", nullable = false, unique = true, length = 50)
+    @Column(name = "display_name", nullable = false, unique = true, length = 15)
     private String displayName;
 
     @ManyToMany(fetch = FetchType.EAGER)

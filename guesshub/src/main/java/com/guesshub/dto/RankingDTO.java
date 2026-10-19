@@ -5,5 +5,6 @@ public record RankingDTO(
     String username,
     int puntos,
     int partidasJugadas,
-    int partidasCorrectas
+    int partidasCorrectas,
+    int rachaDias
 ) {}

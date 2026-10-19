@@ -16,6 +16,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "puntajes")
 @Getter
@@ -41,10 +43,34 @@ public class Puntaje {
     @Column(name = "partidas_correctas", nullable = false)
     private int partidasCorrectas = 0;
 
+    // ── Racha ──────────────────────────────────────────────────────────────
+    /** Días consecutivos que el usuario jugó al menos una partida */
+    @Column(name = "racha_dias", nullable = false)
+    private int rachaDias = 0;
+
+    /** Fecha de la última partida jugada (para calcular si la racha sigue) */
+    @Column(name = "ultima_partida_fecha")
+    private LocalDate ultimaPartidaFecha;
+
+    // ── Puntaje por categoría ──────────────────────────────────────────────
+    @Column(name = "puntos_peliculas", nullable = false)
+    private int puntosPeliculas = 0;
+
+    @Column(name = "puntos_musica", nullable = false)
+    private int puntosMusica = 0;
+
+    @Column(name = "puntos_deportes", nullable = false)
+    private int puntosDeportes = 0;
+
     public Puntaje(Usuario usuario) {
         this.usuario = usuario;
         this.puntos = 0;
         this.partidasJugadas = 0;
         this.partidasCorrectas = 0;
+        this.rachaDias = 0;
+        this.ultimaPartidaFecha = null;
+        this.puntosPeliculas = 0;
+        this.puntosMusica = 0;
+        this.puntosDeportes = 0;
     }
 }

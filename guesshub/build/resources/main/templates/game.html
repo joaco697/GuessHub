@@ -255,7 +255,7 @@
       }
 
       try {
-        const res = await fetch('/equipo/usuarios/registrar', {
+        const res = await fetch('/api/usuarios/registrar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, displayName, password, verificacionPassword: password2 })
@@ -450,7 +450,7 @@
         await fetch('/api/partida', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
-          body: JSON.stringify({ correcto, pistasUsadas: pistasReveladas, segundosUsados })
+          body: JSON.stringify({ correcto, pistasUsadas: pistasReveladas, segundosUsados, categoria: modoActual })
         });
       } catch (e) { console.error('Error guardando partida', e); }
     }
