@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -38,14 +41,20 @@ public class PuntajeController {
      * Devuelve el top 10. Sin parámetro o cat=global → ranking global.
      */
     @GetMapping("/ranking")
-    public ResponseEntity<List<RankingDTO>> getRanking(
+    public ResponseEntity<?> getRanking(
             @RequestParam(value = "cat", defaultValue = "global") String cat) {
-        return switch (cat.toLowerCase()) {
-            case "peliculas", "pelicula" -> ResponseEntity.ok(puntajeService.getRankingPeliculas());
-            case "musica", "cancion"     -> ResponseEntity.ok(puntajeService.getRankingMusica());
-            case "deportes", "equipo"    -> ResponseEntity.ok(puntajeService.getRankingDeportes());
-            default                      -> ResponseEntity.ok(puntajeService.getRanking());
-        };
+        try {
+            List<RankingDTO> ranking = switch (cat.toLowerCase()) {
+                case "peliculas", "pelicula" -> puntajeService.getRankingPeliculas();
+                case "musica", "cancion"     -> puntajeService.getRankingMusica();
+                case "deportes", "equipo"    -> puntajeService.getRankingDeportes();
+                default                      -> puntajeService.getRanking();
+            };
+            return ResponseEntity.ok(ranking);
+        } catch (Exception e) {
+            log.error("Error al obtener ranking (cat={}): {}", cat, e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
     }
 
     /**

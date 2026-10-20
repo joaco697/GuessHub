@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/equipo").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/api/buscar").permitAll()
+                        .requestMatchers("/error").permitAll()
 
                         .anyRequest().authenticated()
                 )

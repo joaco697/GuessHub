@@ -197,10 +197,16 @@
 
     try {
       const res = await fetch(`/api/ranking?cat=${cat}`);
-      if (!res.ok) { showToast('Error al cargar el ranking', 'error'); return; }
+      if (!res.ok) {
+        showToast('Error al cargar el ranking', 'error');
+        container.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:2rem">
+          No se pudo cargar el ranking en este momento.<br>Asegurate de que el servidor esté activo.
+        </div>`;
+        return;
+      }
       const data = await res.json();
 
-      if (data.length === 0) {
+      if (!Array.isArray(data) || data.length === 0) {
         container.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:2rem">
           Todavía no hay jugadores en esta categoría.<br>¡Sé el primero en sumar puntos!
         </div>`;
@@ -237,6 +243,9 @@
 
     } catch (e) {
       showToast('Error de conexión', 'error');
+      container.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:2rem">
+        Error de conexión al cargar el ranking.
+      </div>`;
     }
   }
 
