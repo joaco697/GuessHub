@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>GuessHub — Panel de Administración</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <style>
+    .admin-wrapper { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 6rem; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+    .admin-title { font-size: 1.5rem; font-weight: 900; color: var(--text-dark); }
+    .admin-badge { background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80; border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; font-weight: 800; }
+    .admin-tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
+    .admin-tab { background: none; border: none; border-bottom: 3px solid transparent; padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 700; color: var(--text-mid); cursor: pointer; margin-bottom: -2px; transition: all 0.15s; }
+    .admin-tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* Stats Cards */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; }
+    .stat-num { font-size: 2rem; font-weight: 900; color: var(--green); }
+    .stat-label { font-size: 0.8rem; color: var(--text-mid); font-weight: 600; margin-top: 0.1rem; }
+
+    /* Tabla de Feedbacks */
+    .feedback-filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+    .filter-btn { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.15s; color: var(--text-mid); }
+    .filter-btn.active, .filter-btn:hover { background: var(--green); color: white; border-color: var(--green); }
+
+    .feedback-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .feedback-table th { text-align: left; padding: 0.65rem 0.9rem; background: #F8FAFC; border-bottom: 2px solid var(--border); font-size: 0.75rem; font-weight: 800; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.04em; }
+    .feedback-table td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .feedback-table tr:last-child td { border-bottom: none; }
+    .feedback-table tr:hover td { background: #F8FAFC; }
+
+    .tipo-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; }
+    .tipo-SUGERENCIA_JUEGO { background: #E8F5E9; color: #2E7D32; }
+    .tipo-EXPERIENCIA { background: #E3F2FD; color: #1565C0; }
+    .tipo-DIFICULTAD { background: #FFF8E1; color: #E65100; }
+    .tipo-BUG { background: #FCE4EC; color: #880E4F; }
+    .tipo-OTRO { background: #F3E5F5; color: #6A1B9A; }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-mid); }
+    .empty-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+
+    .loading-state { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 2rem; color: var(--text-mid); }
+    .spinner { width: 20px; height: 20px; border: 3px solid #E8F5E9; border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .comentario-text { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-mid); font-size: 0.82rem; cursor: pointer; }
+    .comentario-text:hover { white-space: normal; }
+
+    .user-cell { display: flex; flex-direction: column; gap: 1px; }
+    .user-name { font-weight: 700; color: var(--text-dark); }
+    .user-email { font-size: 0.75rem; color: var(--text-mid); }
+  </style>
+</head>
+<body>
+
+<th:block th:replace="~{fragments/layout :: shell('admin')}"></th:block>
+
+<div class="admin-wrapper">
+
+  <div class="admin-header">
+    <div>
+      <div style="display:flex;align-items:center;gap:0.6rem">
+        <h1 class="admin-title">🛠️ Panel de Administración</h1>
+        <span class="admin-badge">ADMIN</span>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-mid);margin-top:0.2rem">Resumen de actividad, feedbacks y estado del sistema.</p>
+    </div>
+    <a class="btn btn-sm btn-secondary" th:href="@{/}">← Volver al inicio</a>
+  </div>
+
+  <!-- Stats Rápidas -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="stat-feedbacks">—</div><div class="stat-label">Feedbacks recibidos</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-sugerencias">—</div><div class="stat-label">Sugerencias de juegos</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-bugs">—</div><div class="stat-label">Bugs reportados</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-con-email">—</div><div class="stat-label">Con email de contacto</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="cambiarTab('feedback', this)">💬 Feedback de Usuarios</button>
+    <button class="admin-tab" onclick="cambiarTab('sistema', this)">⚙️ Estado del Sistema</button>
+  </div>
+
+  <!-- PANEL: Feedback -->
+  <div id="panel-feedback" class="admin-panel active">
+    <div class="feedback-filters">
+      <span style="font-size:0.8rem;font-weight:700;color:var(--text-mid)">Filtrar por tipo:</span>
+      <button class="filter-btn active" onclick="filtrar('todos', this)">Todos</button>
+      <button class="filter-btn" onclick="filtrar('SUGERENCIA_JUEGO', this)">🎮 Sugerencias</button>
+      <button class="filter-btn" onclick="filtrar('EXPERIENCIA', this)">⭐ Experiencia</button>
+      <button class="filter-btn" onclick="filtrar('DIFICULTAD', this)">🎯 Dificultad</button>
+      <button class="filter-btn" onclick="filtrar('BUG', this)">🐛 Bugs</button>
+      <button class="filter-btn" onclick="filtrar('OTRO', this)">📌 Otro</button>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div id="feedback-loading" class="loading-state">
+        <div class="spinner"></div> Cargando feedbacks...
+      </div>
+      <div id="feedback-empty" class="empty-state" hidden>
+        <div class="empty-icon">💬</div>
+        <div style="font-weight:700;margin-bottom:0.3rem">Sin feedbacks aún</div>
+        <div style="font-size:0.85rem">Todavía no se recibieron reportes de este tipo.</div>
+      </div>
+      <div id="feedback-table-wrapper" hidden>
+        <table class="feedback-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tipo</th>
+              <th>Usuario</th>
+              <th>Opción elegida</th>
+              <th>Comentario</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="feedback-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: Sistema -->
+  <div id="panel-sistema" class="admin-panel">
+    <div class="card" style="margin-bottom:1rem">
+      <div style="font-weight:800;font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem">
+        ⚙️ Estado del Backend
+      </div>
+      <div id="sistema-loading" class="loading-state" style="padding:1rem">
+        <div class="spinner"></div> Verificando estado...
+      </div>
+      <div id="sistema-info" hidden></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800;font-size:1rem;margin-bottom:0.75rem">🌐 Test de APIs en Vivo</div>
+      <button class="btn btn-sm btn-green" id="btn-test-live" type="button">▶️ Probar conectividad ahora</button>
+      <div id="live-result" style="margin-top:1rem;font-size:0.88rem" hidden></div>
+    </div>
+  </div>
+
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+<script>
+  // ---- Verificar autenticación de admin ----
+  document.addEventListener('DOMContentLoaded', async () => {
+    const token = GH.token();
+    if (!token) {
+      GH.toast('Acceso restringido. Por favor ingresá con una cuenta de administrador.', 'error');
+      setTimeout(() => location.href = '/', 1500);
+      return;
+    }
+    cargarFeedbacks();
+    cargarEstadoSistema();
+  });
+
+  // ---- Tabs ----
+  function cambiarTab(nombre, btn) {
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + nombre).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ---- Feedbacks ----
+  let todosLosFeedbacks = [];
+  let filtroActual = 'todos';
+
+  async function cargarFeedbacks() {
+    try {
+      const res = await fetch('/api/admin/feedback', { headers: GH.authHeaders() });
+      if (res.status === 403) {
+        document.getElementById('feedback-loading').innerHTML =
+          '<div style="text-align:center;padding:2rem;color:#E65100">⛔ Acceso denegado. Esta sección es sólo para administradores.</div>';
+        return;
+      }
+      if (!res.ok) throw new Error('Error al cargar');
+      todosLosFeedbacks = await res.json();
+      actualizarEstadisticas(todosLosFeedbacks);
+      renderFeedbacks(todosLosFeedbacks);
+    } catch (e) {
+      document.getElementById('feedback-loading').innerHTML =
+        '<div style="text-align:center;padding:2rem;color:#E65100">Error al cargar los feedbacks. ' + e.message + '</div>';
+    }
+  }
+
+  function actualizarEstadisticas(feedbacks) {
+    document.getElementById('stat-feedbacks').textContent = feedbacks.length;
+    document.getElementById('stat-sugerencias').textContent = feedbacks.filter(f => f.tipo === 'SUGERENCIA_JUEGO').length;
+    document.getElementById('stat-bugs').textContent = feedbacks.filter(f => f.tipo === 'BUG').length;
+    document.getElementById('stat-con-email').textContent = feedbacks.filter(f => f.emailContacto).length;
+  }
+
+  function filtrar(tipo, btn) {
+    filtroActual = tipo;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filtrados = tipo === 'todos' ? todosLosFeedbacks : todosLosFeedbacks.filter(f => f.tipo === tipo);
+    renderFeedbacks(filtrados);
+  }
+
+  function renderFeedbacks(feedbacks) {
+    const loading = document.getElementById('feedback-loading');
+    const empty = document.getElementById('feedback-empty');
+    const tableWrapper = document.getElementById('feedback-table-wrapper');
+    const tbody = document.getElementById('feedback-tbody');
+
+    loading.hidden = true;
+
+    if (!feedbacks || feedbacks.length === 0) {
+      empty.hidden = false;
+      tableWrapper.hidden = true;
+      return;
+    }
+
+    empty.hidden = true;
+    tableWrapper.hidden = false;
+
+    tbody.innerHTML = feedbacks.map((f, i) => {
+      const fecha = new Date(f.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+      const tipoLabel = { SUGERENCIA_JUEGO: 'Sugerencia', EXPERIENCIA: 'Experiencia', DIFICULTAD: 'Dificultad', BUG: 'Bug', OTRO: 'Otro' }[f.tipo] || f.tipo;
+      const usuario = f.usuario ? `<div class="user-name">👤 ${esc(f.usuario.displayName || f.usuario.username)}</div>` : '<div style="color:var(--text-mid);font-size:0.8rem">Invitado</div>';
+      const email = f.emailContacto ? `<div class="user-email">✉️ ${esc(f.emailContacto)}</div>` : '';
+      const comentario = f.comentario ? `<div class="comentario-text" title="${esc(f.comentario)}">${esc(f.comentario)}</div>` : '<span style="color:var(--text-mid);font-size:0.8rem">—</span>';
+      return `<tr>
+        <td style="color:var(--text-mid);font-size:0.8rem">#${f.id}</td>
+        <td><span class="tipo-badge tipo-${f.tipo}">${tipoLabel}</span></td>
+        <td><div class="user-cell">${usuario}${email}</div></td>
+        <td style="font-weight:600">${esc(f.opcionGuiada || '—')}</td>
+        <td>${comentario}</td>
+        <td style="font-size:0.8rem;color:var(--text-mid);white-space:nowrap">${fecha}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // ---- Estado del Sistema ----
+  async function cargarEstadoSistema() {
+    try {
+      const res = await fetch('/api/admin/status', { headers: GH.authHeaders() });
+      if (!res.ok) throw new Error('Error al verificar estado');
+      const data = await res.json();
+
+      document.getElementById('sistema-loading').hidden = true;
+      const info = document.getElementById('sistema-info');
+      info.hidden = false;
+      info.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem">
+          <div style="padding:0.75rem;background:#E8F5E9;border-radius:8px;border:1px solid #C8E6C9">
+            <div style="font-size:0.75rem;font-weight:800;color:#2E7D32;text-transform:uppercase;letter-spacing:0.03em">Modo</div>
+            <div style="font-weight:900;color:#1B5E20;margin-top:0.2rem">${esc(data.modoJuego)}</div>
+          </div>
+          <div style="padding:0.75rem;background:#E8F5E9;border-radius:8px;border:1px solid #C8E6C9">
+            <div style="font-size:0.75rem;font-weight:800;color:#2E7D32;text-transform:uppercase;letter-spacing:0.03em">Validación</div>
+            <div style="font-weight:700;color:#1B5E20;margin-top:0.2rem;font-size:0.85rem">${esc(data.validacionRespuestas)}</div>
+          </div>
+          <div style="padding:0.75rem;background:#FFF8E1;border-radius:8px;border:1px solid #FFE082;grid-column:1/-1">
+            <div style="font-size:0.75rem;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:0.4rem">Fuentes de Datos</div>
+            ${Object.entries(data.fuentes || {}).map(([k,v]) => `<div style="font-size:0.82rem;margin-bottom:0.2rem"><strong>${k}:</strong> ${esc(v)}</div>`).join('')}
+          </div>
+        </div>`;
+    } catch {
+      document.getElementById('sistema-loading').innerHTML = '<span style="color:var(--text-mid)">No se pudo cargar el estado.</span>';
+    }
+  }
+
+  // ---- Test de APIs en Vivo ----
+  document.getElementById('btn-test-live').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-test-live');
+    const result = document.getElementById('live-result');
+    btn.disabled = true;
+    btn.textContent = '⏳ Probando...';
+    result.hidden = true;
+
+    try {
+      const res = await fetch('/api/admin/test-live', { headers: GH.authHeaders() });
+      if (!res.ok) throw new Error('Error al probar');
+      const data = await res.json();
+
+      const ok = (flag) => flag ? '✅ Activo' : '❌ Sin respuesta';
+      result.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+          <div style="padding:0.75rem;border-radius:8px;border:1px solid var(--border);background:#F8FAFC">
+            <div style="font-weight:800;margin-bottom:0.3rem">🎵 Last.fm / Música</div>
+            <div>${ok(data.lastFmLive?.activo)}</div>
+            ${data.lastFmLive?.error !== 'none' ? `<div style="font-size:0.75rem;color:#E65100;margin-top:0.3rem">${esc(data.lastFmLive?.error)}</div>` : ''}
+          </div>
+          <div style="padding:0.75rem;border-radius:8px;border:1px solid var(--border);background:#F8FAFC">
+            <div style="font-weight:800;margin-bottom:0.3rem">🎬 TMDB / Películas</div>
+            <div>${ok(data.tmdbLive?.activo)}</div>
+            ${data.tmdbLive?.error !== 'none' ? `<div style="font-size:0.75rem;color:#E65100;margin-top:0.3rem">${esc(data.tmdbLive?.error)}</div>` : ''}
+          </div>
+        </div>`;
+    } catch {
+      result.innerHTML = '<span style="color:#E65100">Error al contactar las APIs.</span>';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '▶️ Probar conectividad ahora';
+      result.hidden = false;
+    }
+  });
+</script>
+</body>
+</html>

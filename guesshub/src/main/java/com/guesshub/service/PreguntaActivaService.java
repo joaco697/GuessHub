@@ -13,48 +13,58 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Guarda la respuesta correcta de una pregunta en curso del lado del servidor,
- * identificada por un preguntaId random (UUID) que es lo único que viaja al cliente.
- *
- * Reemplaza la validación client-side que tenían Música y Deportes (y el leak de
- * "titulo" que Película mandaba en el JSON de /random aunque no lo usara el frontend):
- * ninguna categoría expone la respuesta correcta en ningún momento antes de validar.
- *
- * Es intencionalmente simple (un Map en memoria, sin persistencia) porque las
- * preguntas son efímeras: viven desde que se piden hasta que se contestan o expiran.
- * Si el backend corriera en más de una instancia, esto tendría que migrar a algo
- * compartido (Redis) — hoy no es el caso (ver Parte 1, sección 7).
+ * identificada por un preguntaId random (UUID).
  */
 @Slf4j
 @Service
 public class PreguntaActivaService {
 
     private static final Duration EXPIRACION = Duration.ofMinutes(10);
+    private static final Duration EXPIRACION_DIARIA = Duration.ofHours(36);
 
     private final Map<String, PreguntaActiva> preguntas = new ConcurrentHashMap<>();
 
-    private record PreguntaActiva(String respuestaCorrecta, Instant creada) {}
+    private record PreguntaActiva(String respuestaCorrecta, Instant creada, boolean compartida) {}
 
     /**
-     * Registra la respuesta correcta de una pregunta nueva y devuelve el id
-     * (UUID) que el cliente va a usar para, más adelante, contestarla.
+     * Registra la respuesta de una pregunta efímera de partida normal.
      */
     public String registrar(String respuestaCorrecta) {
+        return registrar(respuestaCorrecta, false);
+    }
+
+    /**
+     * Registra una pregunta, opcionalmente compartida (ej. desafío diario).
+     */
+    public String registrar(String respuestaCorrecta, boolean compartida) {
         limpiarExpiradas();
         String id = UUID.randomUUID().toString();
-        preguntas.put(id, new PreguntaActiva(respuestaCorrecta, Instant.now()));
+        preguntas.put(id, new PreguntaActiva(respuestaCorrecta, Instant.now(), compartida));
         return id;
     }
 
     /**
+     * Consulta la respuesta sin consumirla (utilizado por generadores de desafíos).
+     */
+    public String peekRespuesta(String preguntaId) {
+        PreguntaActiva pa = preguntas.get(preguntaId);
+        return pa != null ? pa.respuestaCorrecta() : null;
+    }
+
+    /**
      * Valida la respuesta del usuario contra la guardada en el servidor.
-     * La pregunta se consume al validarla (no se puede reintentar la misma).
+     * Si no es compartida, se consume al responder.
      */
     public ResultadoDTO validar(String preguntaId, String respuestaUsuario) {
-        PreguntaActiva pa = preguntas.remove(preguntaId);
+        PreguntaActiva pa = preguntas.get(preguntaId);
 
         if (pa == null) {
             return new ResultadoDTO(false, "—",
                     "Esta pregunta ya expiró o ya fue respondida. Pedí una nueva.");
+        }
+
+        if (!pa.compartida()) {
+            preguntas.remove(preguntaId);
         }
 
         boolean correcto = normalizar(respuestaUsuario).equals(normalizar(pa.respuestaCorrecta()));
@@ -67,13 +77,13 @@ public class PreguntaActivaService {
     }
 
     private void limpiarExpiradas() {
-        Instant limite = Instant.now().minus(EXPIRACION);
-        int antes = preguntas.size();
-        preguntas.entrySet().removeIf(e -> e.getValue().creada().isBefore(limite));
-        int removidas = antes - preguntas.size();
-        if (removidas > 0) {
-            log.debug("Limpieza de preguntas activas: {} expiradas removidas", removidas);
-        }
+        Instant limiteNormal = Instant.now().minus(EXPIRACION);
+        Instant limiteDiario = Instant.now().minus(EXPIRACION_DIARIA);
+
+        preguntas.entrySet().removeIf(e -> {
+            PreguntaActiva p = e.getValue();
+            return p.compartida() ? p.creada().isBefore(limiteDiario) : p.creada().isBefore(limiteNormal);
+        });
     }
 
     private String normalizar(String texto) {

@@ -1,383 +1,149 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GuessHub — Perfil</title>
-  <link rel="stylesheet" th:href="@{/css/styles.css}" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0F19">
+  <title>GuessHub — Mi Perfil y Logros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Figtree:wght@400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
 
-<div id="toast-container"></div>
+<th:block th:replace="~{fragments/layout :: shell('perfil')}"></th:block>
 
-<div class="phone-frame">
+<div class="app-layout">
 
-  <!-- ── NAVBAR ─────────────────────────────────────────────── -->
-  <nav class="navbar">
-    <div class="nav-logo">
-      <span>🏆</span>
-      Guess<span class="logo-green">Hub</span>
+  <!-- Banner Lateral Izquierdo -->
+  <aside class="side-ad-column" aria-label="Espacio publicitario">
+    <div class="ad-banner-box">
+      <span class="ad-icon">⭐</span>
+      <strong>GuessHub</strong>
+      <span>Insignias y logros</span>
     </div>
-    <div class="nav-right">
-      <button class="btn-ingresar" id="btn-ingresar" onclick="location.href='/game#login'">Ingresar</button>
-      <button class="avatar-btn">👤</button>
+  </aside>
+
+  <!-- Columna Central -->
+  <main id="main" class="main-column" style="margin-top:1rem">
+
+    <!-- ESTADO INVITADO -->
+    <div class="card" id="guest-state" style="text-align:center;padding:2.5rem 1.5rem" hidden>
+      <div style="font-size:3rem;margin-bottom:0.5rem">👤</div>
+      <h1 style="font-size:1.5rem;margin-bottom:0.5rem">Jugando como invitado</h1>
+      <p style="color:var(--text-muted);font-size:0.95rem;max-width:380px;margin:0 auto 1.5rem">
+        Creá tu cuenta o iniciá sesión para guardar tu historial, desbloquear insignias y competir en el ranking.
+      </p>
+      <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-green" type="button" onclick="GH.openAuth('login')">Iniciar sesión</button>
+        <button class="btn btn-secondary" type="button" onclick="GH.openAuth('registro')">Registrarse</button>
+      </div>
     </div>
-  </nav>
 
-  <!-- ── SCREEN ─────────────────────────────────────────────── -->
-  <div class="screen">
-    <div class="page-inner">
+    <!-- ESTADO AUTENTICADO -->
+    <div id="user-profile" hidden>
 
-      <!-- Avatar + nombre + badges -->
-      <div class="card" style="text-align:center;padding:1.5rem 1.25rem">
-        <div
-          id="profile-avatar"
-          style="width:72px;height:72px;background:var(--green);border-radius:50%;
-                 display:flex;align-items:center;justify-content:center;
-                 font-size:2.2rem;margin:0 auto .75rem;
-                 border:3px solid var(--green-light);"
-        >👤</div>
-        <div id="profile-name" style="font-weight:900;font-size:1.25rem">–</div>
-        <div id="profile-handle" style="color:var(--text-light);font-size:.85rem;margin:.2rem 0 .75rem">–</div>
-        <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap" id="profile-badges"></div>
-      </div>
+      <!-- Tarjeta Principal de Identidad -->
+      <section class="card" style="text-align:center;position:relative">
+        <div style="width:84px;height:84px;background:linear-gradient(135deg,var(--green),var(--yellow));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:900;margin:0 auto 0.75rem;color:#032517;box-shadow:0 0 20px rgba(16,185,129,0.3)" id="profile-avatar">
+          👤
+        </div>
 
-      <!-- Stats -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem" id="stats-grid">
-        <div class="stat-mini"><div class="val">–</div><div class="lbl">Puntos</div></div>
-        <div class="stat-mini"><div class="val">–</div><div class="lbl">Partidas</div></div>
-        <div class="stat-mini"><div class="val">–</div><div class="lbl">Precisión</div></div>
-        <div class="stat-mini"><div class="val">–</div><div class="lbl">Ranking</div></div>
-      </div>
+        <!-- Selector rápido de avatar -->
+        <div style="margin-bottom:0.75rem">
+          <div style="font-size:0.75rem;color:var(--text-light);margin-bottom:0.35rem">Elegí tu avatar:</div>
+          <div style="display:flex;gap:0.4rem;justify-content:center;flex-wrap:wrap" id="avatar-picker">
+            <button class="btn btn-sm btn-secondary avatar-opt" data-avatar="👤" type="button" style="padding:4px 8px;font-size:1.1rem">👤</button>
+            <button class="btn btn-sm btn-secondary avatar-opt" data-avatar="🦁" type="button" style="padding:4px 8px;font-size:1.1rem">🦁</button>
+            <button class="btn btn-sm btn-secondary avatar-opt" data-avatar="🚀" type="button" style="padding:4px 8px;font-size:1.1rem">🚀</button>
+            <button class="btn btn-sm btn-secondary avatar-opt" data-avatar="🎮" type="button" style="padding:4px 8px;font-size:1.1rem">🎮</button>
+            <button class="btn btn-sm btn-secondary avatar-opt" data-avatar="⚡" type="button" style="padding:4px 8px;font-size:1.1rem">⚡</button>
+            <button class="btn btn-sm btn-secondary avatar-opt" data-avatar="🎬" type="button" style="padding:4px 8px;font-size:1.1rem">🎬</button>
+            <button class="btn btn-sm btn-secondary avatar-opt" data-avatar="🎵" type="button" style="padding:4px 8px;font-size:1.1rem">🎵</button>
+            <button class="btn btn-sm btn-secondary avatar-opt" data-avatar="⚽" type="button" style="padding:4px 8px;font-size:1.1rem">⚽</button>
+          </div>
+        </div>
 
-      <!-- Logros -->
-      <div class="section-title"><span>🏅</span> Logros</div>
-      <div class="achievements-scroll" id="logros-perfil">
-        <div style="color:var(--text-light);font-size:.85rem;padding:.5rem">Cargando...</div>
-      </div>
+        <h1 style="font-size:1.5rem" id="profile-name">Jugador</h1>
+        <div style="color:var(--text-muted);font-size:0.85rem;margin:0.2rem 0 0.75rem" id="profile-handle">@usuario</div>
 
-      <!-- Categorías favoritas -->
-      <div class="card">
-        <div style="font-weight:900;font-size:1rem;margin-bottom:1rem">Puntos por categoría</div>
-        <div id="categorias-container" style="display:flex;flex-direction:column;gap:.85rem">
-          <div style="color:var(--text-light);font-size:.85rem">Sin partidas registradas</div>
+        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap" id="profile-badges-pills"></div>
+
+        <!-- Botón para Congelar Racha si tiene comodines -->
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
+          <div style="text-align:left">
+            <div style="font-weight:700;font-size:0.9rem">❄️ Congelar Racha</div>
+            <div style="font-size:0.78rem;color:var(--text-light)" id="freeze-desc">Protegé tu racha si mañana no podés jugar.</div>
+          </div>
+          <button class="btn btn-sm btn-yellow" id="btn-congelar-racha" type="button">
+            Usar comodín
+          </button>
+        </div>
+      </section>
+
+      <!-- Estadísticas en Grid -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.6rem;margin-bottom:1.25rem" id="stats-grid">
+        <div class="card" style="text-align:center;padding:0.85rem 0.5rem;margin:0">
+          <div style="font-size:1.3rem;font-weight:900;color:var(--green);font-family:var(--font-display)" id="stat-pts">–</div>
+          <div style="font-size:0.72rem;color:var(--text-light);font-weight:700;text-transform:uppercase">Puntos</div>
+        </div>
+        <div class="card" style="text-align:center;padding:0.85rem 0.5rem;margin:0">
+          <div style="font-size:1.3rem;font-weight:900;font-family:var(--font-display)" id="stat-games">–</div>
+          <div style="font-size:0.72rem;color:var(--text-light);font-weight:700;text-transform:uppercase">Partidas</div>
+        </div>
+        <div class="card" style="text-align:center;padding:0.85rem 0.5rem;margin:0">
+          <div style="font-size:1.3rem;font-weight:900;color:var(--yellow);font-family:var(--font-display)" id="stat-acc">–</div>
+          <div style="font-size:0.72rem;color:var(--text-light);font-weight:700;text-transform:uppercase">Precisión</div>
+        </div>
+        <div class="card" style="text-align:center;padding:0.85rem 0.5rem;margin:0">
+          <div style="font-size:1.3rem;font-weight:900;font-family:var(--font-display)" id="stat-rank">–</div>
+          <div style="font-size:0.72rem;color:var(--text-light);font-weight:700;text-transform:uppercase">Ranking</div>
         </div>
       </div>
 
-      <!-- Configuración -->
-      <div class="card">
-        <div style="font-weight:900;font-size:1rem;margin-bottom:1rem">Configuración</div>
-        <div style="display:flex;flex-direction:column;gap:.9rem">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
-            <div>
-              <div style="font-weight:800;font-size:.92rem">Sonidos</div>
-              <div style="font-size:.76rem;color:var(--text-light);font-weight:600">Efectos de sonido en el juego</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div style="height:1px;background:var(--border)"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">
-            <div>
-              <div style="font-weight:800;font-size:.92rem">Notificaciones</div>
-              <div style="font-size:.76rem;color:var(--text-light);font-weight:600">Avisos de ranking y logros</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
-      </div>
+      <!-- Desglose de Puntos por Categoría -->
+      <section class="card">
+        <h2 style="font-size:1.1rem;margin-bottom:1rem">Puntos por Categoría</h2>
+        <div id="cats-breakdown" style="display:flex;flex-direction:column;gap:0.85rem"></div>
+      </section>
 
-      <!-- Cerrar sesión -->
-      <button class="btn-dashed" id="btn-logout" style="color:var(--red);border-color:var(--red)">
-        🚪 Cerrar sesión
+      <!-- Catálogo de Insignias y Logros -->
+      <section class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <h2 style="font-size:1.1rem">Insignias & Logros</h2>
+          <span style="font-size:0.78rem;color:var(--text-light)">Toca para equipar en tu avatar</span>
+        </div>
+        <div class="badges-grid" id="badges-container"></div>
+      </section>
+
+      <!-- Botón de Cerrar Sesión -->
+      <button class="btn btn-secondary btn-block" id="btn-logout" type="button" style="margin-top:1.5rem">
+        Cerrar sesión
       </button>
 
-      <div style="height:.5rem"></div>
     </div>
-  </div>
 
-  <!-- ── BOTTOM NAV ──────────────────────────────────────────── -->
-  <nav class="bottom-nav">
-    <button class="bn-item" onclick="location.href='/'">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-      Inicio
-    </button>
-    <button class="bn-item" onclick="location.href='/ranking'">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 20h2V8H7v12zm2-18H7v2h2V2zm4 18h2V4h-2v16zm6 0h2v-8h-2v8zm0-10h2V8h-2v2z"/></svg>
-      Ranking
-    </button>
-    <button class="bn-item" onclick="location.href='/game'">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      Jugar
-    </button>
-    <button class="bn-item active">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-      Perfil
-    </button>
-  </nav>
+    <!-- Banner Inferior -->
+    <div class="bottom-ad-bar">
+      <span>Espacio publicitario patrocinado</span>
+      <span class="bottom-ad-tag">Anuncio</span>
+    </div>
+
+  </main>
+
+  <!-- Banner Lateral Derecho -->
+  <aside class="side-ad-column" aria-label="Espacio publicitario">
+    <div class="ad-banner-box">
+      <span class="ad-icon">📢</span>
+      <strong>GuessHub</strong>
+      <span>Banner lateral</span>
+    </div>
+  </aside>
 
 </div>
 
-<script>
-/* =============================================================
-   perfil.js — Carga datos reales desde localStorage y la API
-   ============================================================= */
-
-// FIX: leer displayName correctamente (nunca mostrar el email)
-function getDisplayName() {
-  const displayName = localStorage.getItem('displayName');
-  if (displayName && displayName.trim()) return displayName.trim();
-  const username = localStorage.getItem('username') || '';
-  return username.includes('@') ? username.split('@')[0] : (username || 'Jugador');
-}
-
-function getToken() { return localStorage.getItem('token'); }
-
-// ── Al cargar: renderizar perfil desde localStorage + API ─────
-window.addEventListener('load', async () => {
-  const displayName = getDisplayName();
-
-  // Navbar
-  const btnIngresar = document.getElementById('btn-ingresar');
-  if (getToken()) {
-    btnIngresar.textContent = '👤 ' + displayName;
-    btnIngresar.onclick = null;
-  } else {
-    btnIngresar.textContent = 'Ingresar';
-    btnIngresar.onclick = () => location.href = '/game#login';
-  }
-
-  // Avatar: primera letra del displayName
-  document.getElementById('profile-avatar').textContent =
-    displayName.charAt(0).toUpperCase();
-
-  // Nombre y handle
-  document.getElementById('profile-name').textContent = displayName;
-  const username = localStorage.getItem('username') || '';
-  document.getElementById('profile-handle').textContent =
-    username ? '@' + username.split('@')[0] : '@' + displayName.toLowerCase();
-
-  // Badges base (sin datos de ranking todavía)
-  renderBadges({ rankPosition: '–', streakDays: 0 });
-
-  // Cargar datos reales desde la API de ranking (stats, badges, logros y categorías)
-  await cargarDatosRanking(displayName);
-});
-
-// ── Cargar mi posición real (esté o no en el Top 10) ───────────
-async function cargarDatosRanking(myDisplayName) {
-  if (!getToken()) {
-    // Invitado: no tiene partidas guardadas ni posición
-    renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
-    renderBadges({ rankPosition: '–', streakDays: 0 });
-    renderLogros(null);
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/ranking/mi-posicion', {
-      headers: { 'Authorization': 'Bearer ' + getToken() }
-    });
-    if (!res.ok) throw new Error('No se pudo obtener la posición');
-    const miData = await res.json();
-
-    if (miData.partidasJugadas > 0) {
-      const precision = Math.round((miData.partidasCorrectas / miData.partidasJugadas) * 100);
-
-      renderStats({
-        totalScore: miData.puntos,
-        gamesPlayed: miData.partidasJugadas,
-        accuracy: precision,
-        rankPosition: miData.posicion
-      });
-
-      renderBadges({ rankPosition: miData.posicion, streakDays: miData.rachaDias || 0 });
-      renderLogros(miData);
-      renderCategorias(miData);
-    } else {
-      // Usuario registrado pero sin partidas aún
-      renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
-      renderBadges({ rankPosition: '–', streakDays: 0 });
-      renderLogros(null);
-      renderCategorias(null);
-    }
-
-  } catch (e) {
-    console.error('Error cargando ranking:', e);
-    renderStats({ totalScore: 0, gamesPlayed: 0, accuracy: 0, rankPosition: '–' });
-    renderBadges({ rankPosition: '–', streakDays: 0 });
-    renderLogros(null);
-    renderCategorias(null);
-  }
-}
-
-// ── renderBadges ──────────────────────────────────────────────
-function renderBadges({ rankPosition, streakDays }) {
-  const badges = document.getElementById('profile-badges');
-  badges.innerHTML = '';
-  const badgeData = [
-    { text: '🎮 Activo',                   cls: 'pill pill-green-outline' },
-    { text: `🔥 Racha ${streakDays}d`,     cls: streakDays > 0 ? 'pill pill-orange' : 'pill pill-green-outline' },
-    { text: `🌍 Ranking #${rankPosition}`, cls: 'pill pill-green-outline' },
-  ];
-  badgeData.forEach(b => {
-    const span = document.createElement('span');
-    span.className = b.cls;
-    span.style.fontSize = '.8rem';
-    span.textContent = b.text;
-    badges.appendChild(span);
-  });
-}
-
-// ── renderCategorias ──────────────────────────────────────────
-function renderCategorias(userData) {
-  const container = document.getElementById('categorias-container');
-  if (!userData || userData.puntos === 0) {
-    container.innerHTML = `<div style="color:var(--text-light);font-size:.85rem">Sin partidas registradas</div>`;
-    return;
-  }
-
-  const pelis = userData.puntosPeliculas || 0;
-  const musica = userData.puntosMusica || 0;
-  const deportes = userData.puntosDeportes || 0;
-  const total = Math.max(1, pelis + musica + deportes);
-
-  const pPelis = Math.round((pelis / total) * 100);
-  const pMusica = Math.round((musica / total) * 100);
-  const pDeportes = Math.round((deportes / total) * 100);
-
-  container.innerHTML = `
-    <div class="cat-progress-row">
-      <div class="cat-progress-header"><span>🎬 Películas (${pelis} pts)</span><span>${pPelis}%</span></div>
-      <div class="progress-track"><div class="progress-fill" style="width:${pPelis}%"></div></div>
-    </div>
-    <div class="cat-progress-row">
-      <div class="cat-progress-header"><span>🎵 Música (${musica} pts)</span><span>${pMusica}%</span></div>
-      <div class="progress-track"><div class="progress-fill" style="width:${pMusica}%"></div></div>
-    </div>
-    <div class="cat-progress-row">
-      <div class="cat-progress-header"><span>⚽ Deportes (${deportes} pts)</span><span>${pDeportes}%</span></div>
-      <div class="progress-track"><div class="progress-fill" style="width:${pDeportes}%"></div></div>
-    </div>
-  `;
-}
-
-// ── renderStats ───────────────────────────────────────────────
-function renderStats({ totalScore, gamesPlayed, accuracy, rankPosition }) {
-  const items = [
-    { val: Number(totalScore).toLocaleString(), lbl: 'Puntos'    },
-    { val: gamesPlayed,                          lbl: 'Partidas'  },
-    { val: accuracy + '%',                       lbl: 'Precisión' },
-    { val: '#' + rankPosition,                   lbl: 'Ranking'   },
-  ];
-  const grid = document.getElementById('stats-grid');
-  grid.innerHTML = '';
-  items.forEach(s => {
-    const div = document.createElement('div');
-    div.className = 'stat-mini anim-pop';
-    div.innerHTML = `<div class="val">${s.val}</div><div class="lbl">${s.lbl}</div>`;
-    grid.appendChild(div);
-  });
-}
-
-// ── FIX: renderLogros con datos reales ───────────────────────
-// Determina qué logros están desbloqueados según las stats del usuario
-function renderLogros(userData) {
-  const partidas      = userData ? userData.partidasJugadas   : 0;
-  const correctas     = userData ? userData.partidasCorrectas : 0;
-  const puntos        = userData ? userData.puntos            : 0;
-  const racha         = userData ? (userData.rachaDias || 0)  : 0;
-  const pelis         = userData ? (userData.puntosPeliculas || 0) : 0;
-  const musica        = userData ? (userData.puntosMusica || 0)    : 0;
-  const deportes      = userData ? (userData.puntosDeportes || 0)  : 0;
-  const precision     = partidas > 0 ? correctas / partidas : 0;
-
-  const achievements = [
-    {
-      icon: '🔥', name: 'Chispa',
-      unlocked: racha >= 3,
-      desc: 'Alcanzar 3 días de racha consecutiva'
-    },
-    {
-      icon: '⚡', name: 'Imparable',
-      unlocked: racha >= 7,
-      desc: 'Alcanzar 7 días de racha consecutiva'
-    },
-    {
-      icon: '👑', name: 'Leyenda',
-      unlocked: racha >= 30,
-      desc: 'Alcanzar 30 días de racha consecutiva'
-    },
-    {
-      icon: '🎬', name: 'Cinéfilo',
-      unlocked: pelis > 0,
-      desc: 'Adivinar y sumar puntos en Películas'
-    },
-    {
-      icon: '🎵', name: 'Melómano',
-      unlocked: musica > 0,
-      desc: 'Adivinar y sumar puntos en Música'
-    },
-    {
-      icon: '⚽', name: 'Goleador',
-      unlocked: deportes > 0,
-      desc: 'Adivinar y sumar puntos en Deportes'
-    },
-    {
-      icon: '🎯', name: 'Certero',
-      unlocked: precision >= 0.7 && partidas >= 3,
-      desc: '70%+ de precisión (mín. 3 partidas)'
-    },
-    {
-      icon: '🌟', name: 'Mil puntos',
-      unlocked: puntos >= 1000,
-      desc: 'Acumular 1.000 puntos'
-    },
-    {
-      icon: '💎', name: 'Maestro',
-      unlocked: puntos >= 5000,
-      desc: 'Acumular 5.000 puntos'
-    },
-  ];
-
-  const container = document.getElementById('logros-perfil');
-  container.innerHTML = '';
-
-  achievements.forEach((a, i) => {
-    const div = document.createElement('div');
-    div.className = 'ach-item anim-fade-up' + (a.unlocked ? '' : ' locked');
-    div.style.animationDelay = `${i * 0.05}s`;
-    div.title = a.unlocked ? '¡Desbloqueado!' : `Bloqueado: ${a.desc}`;
-    div.innerHTML = `<div class="ach-icon">${a.icon}</div><div class="ach-name">${a.name}</div>`;
-    container.appendChild(div);
-  });
-}
-
-// ── Cerrar sesión ─────────────────────────────────────────────
-document.getElementById('btn-logout').addEventListener('click', () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
-  localStorage.removeItem('displayName');
-  location.href = '/';
-});
-
-// ── Toast ─────────────────────────────────────────────────────
-function showToast(msg, type = '') {
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
-  document.getElementById('toast-container').appendChild(t);
-  setTimeout(() => {
-    t.classList.add('removing');
-    setTimeout(() => t.remove(), 260);
-  }, 2600);
-}
-</script>
-
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/perfil.js}"></script>
 </body>
 </html>

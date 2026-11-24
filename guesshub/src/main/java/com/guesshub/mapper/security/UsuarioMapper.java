@@ -14,9 +14,15 @@ public class UsuarioMapper {
 
     public UsuarioDTO toDTO(Usuario usuario) {
         if (usuario == null) return null;
+        String insignia = usuario.getInsigniaEquipada() != null
+                ? usuario.getInsigniaEquipada().getIcono() + " " + usuario.getInsigniaEquipada().getNombre()
+                : null;
         return new UsuarioDTO(
             usuario.getUsername(),
             usuario.getDisplayName(),
+            usuario.getFotoPerfil(),
+            usuario.getComodinesRacha(),
+            insignia,
             usuario.getRoles().stream().map(Rol::getNombre).toList()
         );
     }

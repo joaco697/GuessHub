@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Uso: <th:block th:replace="~{fragments/layout :: shell('inicio')}"></th:block>
+  Valores de "active": inicio | ranking | jugar | perfil
+-->
+<th:block th:fragment="shell(active)">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- Top Navbar -->
+  <header class="top-navbar">
+    <div class="top-navbar-inner">
+      <a class="brand-logo" th:href="@{/}">
+        <span class="logo-trophy">🏆</span>
+        <span>Guess<span class="accent">Hub</span></span>
+      </a>
+
+      <nav class="desktop-nav-links" aria-label="Navegación Desktop">
+        <a th:href="@{/}" class="nav-link-btn" th:classappend="${active == 'inicio'} ? 'active'">Inicio</a>
+        <a th:href="@{/game}" class="nav-link-btn" th:classappend="${active == 'jugar'} ? 'active'">Jugar</a>
+        <a th:href="@{/ranking}" class="nav-link-btn" th:classappend="${active == 'ranking'} ? 'active'">Ranking</a>
+        <a th:href="@{/perfil}" class="nav-link-btn" th:classappend="${active == 'perfil'} ? 'active'">Perfil</a>
+        <button class="nav-link-btn" id="btn-abrir-feedback" type="button" title="Sugerir minijuego o dar feedback">💡 Sugerir</button>
+      </nav>
+
+      <div class="nav-actions">
+        <span class="nav-streak-pill" id="nav-streak" hidden>
+          <span>🔥</span> <span id="nav-streak-days">0</span>d
+        </span>
+
+        <button class="btn btn-sm btn-secondary" id="nav-btn-auth" type="button">
+          Ingresar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-bar" aria-label="Navegación Móvil">
+    <a th:href="@{/}" class="bottom-tab-item" th:classappend="${active == 'inicio'} ? 'active'">
+      <span class="tab-icon">🏠</span>
+      <span>Inicio</span>
+    </a>
+    <a th:href="@{/game}" class="bottom-tab-item" th:classappend="${active == 'jugar'} ? 'active'">
+      <span class="tab-icon">🎮</span>
+      <span>Jugar</span>
+    </a>
+    <a th:href="@{/ranking}" class="bottom-tab-item" th:classappend="${active == 'ranking'} ? 'active'">
+      <span class="tab-icon">🏆</span>
+      <span>Ranking</span>
+    </a>
+    <a th:href="@{/perfil}" class="bottom-tab-item" th:classappend="${active == 'perfil'} ? 'active'">
+      <span class="tab-icon">👤</span>
+      <span>Perfil</span>
+    </a>
+  </nav>
+
+  <!-- MODAL: LOGIN -->
+  <div class="modal-overlay" id="modal-login" hidden>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-login-title">
+      <button class="modal-close-btn" type="button" onclick="GH.closeModal('modal-login')">✕</button>
+      <div style="font-size:2.2rem;margin-bottom:0.4rem">🔐</div>
+      <h2 id="modal-login-title" style="font-size:1.35rem">Iniciar sesión</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.25rem">
+        Accedé para guardar tus puntos en el ranking y mantener tu racha.
+      </p>
+
+      <form class="modal-form" id="form-login">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input class="form-input" id="login-email" type="email" placeholder="tu@email.com" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-pass">Contraseña</label>
+          <input class="form-input" id="login-pass" type="password" placeholder="Tu contraseña" required autocomplete="current-password">
+        </div>
+        <div style="text-align:right;margin-top:-0.4rem;margin-bottom:0.4rem">
+          <button type="button" style="color:var(--yellow-dark);font-size:0.82rem;font-weight:800;" onclick="GH.openRecuperarPassword()">¿Olvidaste tu contraseña?</button>
+        </div>
+        <button class="btn btn-green btn-block" type="submit" id="btn-submit-login">Ingresar</button>
+      </form>
+
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.2rem;text-align:center">
+        ¿No tenés cuenta?
+        <button type="button" style="color:var(--green);font-weight:800;" onclick="GH.switchAuth('registro')">Registrate</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRO -->
+  <div class="modal-overlay" id="modal-registro" hidden>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-reg-title">
+      <button class="modal-close-btn" type="button" onclick="GH.closeModal('modal-registro')">✕</button>
+      <div style="font-size:2.2rem;margin-bottom:0.4rem">📝</div>
+      <h2 id="modal-reg-title" style="font-size:1.35rem">Crear cuenta</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.25rem">
+        Elegí un nombre visible (5 a 15 caracteres) para el ranking.
+      </p>
+
+      <form class="modal-form" id="form-registro">
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email</label>
+          <input class="form-input" id="reg-email" type="email" placeholder="tu@email.com" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-displayname">Nombre de usuario (5 a 15 caracteres)</label>
+          <input class="form-input" id="reg-displayname" type="text" placeholder="Ej: Campeon99" minlength="5" maxlength="15" required autocomplete="nickname">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-pass">Contraseña (mínimo 8 caracteres)</label>
+          <input class="form-input" id="reg-pass" type="password" placeholder="Contraseña segura" minlength="8" required autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-pass2">Repetir contraseña</label>
+          <input class="form-input" id="reg-pass2" type="password" placeholder="Repetí tu contraseña" required autocomplete="new-password">
+        </div>
+        <button class="btn btn-green btn-block" type="submit" id="btn-submit-registro">Crear cuenta</button>
+      </form>
+
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.2rem;text-align:center">
+        ¿Ya tenés cuenta?
+        <button type="button" style="color:var(--green);font-weight:800;" onclick="GH.switchAuth('login')">Iniciá sesión</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- MODAL: FEEDBACK GUIADO (Relevamiento) -->
+  <div class="modal-overlay" id="modal-feedback" hidden>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-feed-title">
+      <button class="modal-close-btn" type="button" onclick="GH.closeModal('modal-feedback')">✕</button>
+      <div style="font-size:2.2rem;margin-bottom:0.4rem">💡</div>
+      <h2 id="modal-feed-title" style="font-size:1.35rem">Sugerir o Calificar</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.25rem">
+        Ayudanos a mejorar GuessHub o sugerí un nuevo minijuego para la plataforma.
+      </p>
+
+      <form class="modal-form" id="form-feedback">
+        <div class="form-group">
+          <label class="form-label" for="feed-tipo">Tipo de aporte</label>
+          <select class="form-select" id="feed-tipo" required>
+            <option value="SUGERENCIA_MINIJUEGO">Sugerir un nuevo minijuego</option>
+            <option value="DIFICULTAD">Opinión sobre la dificultad</option>
+            <option value="JUGABILIDAD">Jugabilidad y diseño</option>
+            <option value="OTRO">Otro comentario</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="feed-opcion">¿Qué te parece la velocidad y dinámica actual?</label>
+          <select class="form-select" id="feed-opcion" required>
+            <option value="Muy divertida y rápida">Muy divertida y rápida</option>
+            <option value="Buena, pero faltan minijuegos">Buena, pero faltan más minijuegos</option>
+            <option value="Las pistas son muy difíciles">Las pistas son muy difíciles</option>
+            <option value="Las pistas son muy fáciles">Las pistas son muy fáciles</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="feed-comentario">Tu sugerencia o comentario (opcional)</label>
+          <textarea class="form-textarea" id="feed-comentario" rows="3" placeholder="Ej: Agreguen minijuegos de series o banderas del mundo..."></textarea>
+        </div>
+
+        <button class="btn btn-yellow btn-block" type="submit" id="btn-submit-feedback">Enviar sugerencia</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RECUPERAR CONTRASEÑA -->
+  <div class="modal-overlay" id="modal-recuperar" hidden>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-recup-title">
+      <button class="modal-close-btn" type="button" onclick="GH.closeModal('modal-recuperar')">✕</button>
+      <div style="font-size:2.2rem;margin-bottom:0.4rem">🔑</div>
+      <h2 id="modal-recup-title" style="font-size:1.35rem">Recuperar contraseña</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.25rem" id="recup-desc">
+        Ingresá tu email y te enviaremos un código de seguridad de 6 dígitos.
+      </p>
+
+      <!-- PASO 1: Solicitar Código -->
+      <form class="modal-form" id="form-recuperar-paso1">
+        <div class="form-group">
+          <label class="form-label" for="recup-email">Email registrado</label>
+          <input class="form-input" id="recup-email" type="email" placeholder="tu@email.com" required autocomplete="email">
+        </div>
+        <button class="btn btn-yellow btn-block" type="submit" id="btn-enviar-codigo">Enviar código</button>
+      </form>
+
+      <!-- PASO 2: Ingresar Código y Nueva Contraseña -->
+      <form class="modal-form" id="form-recuperar-paso2" hidden>
+        <div class="form-group">
+          <label class="form-label" for="recup-codigo">Código recibido (6 dígitos)</label>
+          <input class="form-input" id="recup-codigo" type="text" placeholder="Ej: 123456" maxlength="10" required autocomplete="one-time-code" style="letter-spacing:2px;font-weight:900;text-align:center">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="recup-nueva-pass">Nueva contraseña (mínimo 8 caracteres)</label>
+          <input class="form-input" id="recup-nueva-pass" type="password" placeholder="Tu nueva contraseña" minlength="8" required autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="recup-nueva-pass2">Repetir nueva contraseña</label>
+          <input class="form-input" id="recup-nueva-pass2" type="password" placeholder="Repetí tu contraseña" required autocomplete="new-password">
+        </div>
+        <button class="btn btn-green btn-block" type="submit" id="btn-cambiar-pass">Cambiar contraseña</button>
+        <button type="button" class="btn btn-sm btn-ghost" onclick="GH.resetPasoRecuperar()">← Volver a pedir código</button>
+      </form>
+
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.2rem;text-align:center">
+        ¿Te acordaste de tu contraseña?
+        <button type="button" style="color:var(--green);font-weight:800;" onclick="GH.switchAuth('login')">Iniciá sesión</button>
+      </p>
+    </div>
+  </div>
+
+</th:block>
+
+</body>
+</html>

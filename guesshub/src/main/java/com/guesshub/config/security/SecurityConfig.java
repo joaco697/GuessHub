@@ -33,26 +33,29 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Páginas HTML — acceso libre (el login lo maneja el JS)
-                        .requestMatchers(HttpMethod.GET, "/", "/game", "/ranking", "/perfil", "/index").permitAll()
+                        // Páginas HTML — acceso libre (las no existentes van a /error en vez de 401)
+                        .requestMatchers(HttpMethod.GET, "/", "/game", "/ranking", "/perfil", "/index", "/admin").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/error").permitAll()
                         // Recursos estáticos
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         // Auth pública
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/registrar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/usuarios").hasRole("ADMIN")
 
                         // Admin: gestión, sincronización y monitoreo live
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Categorías de juego en vivo y respuestas
+                        // Categorías de juego en vivo, desafío diario y respuestas
                         .requestMatchers(HttpMethod.GET, "/api/random", "/api/cancion/random").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pelicula/random").permitAll()
                         .requestMatchers(HttpMethod.GET, "/equipo/random", "/api/futbol/random", "/api/deportes/random").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/desafio-diario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/respuesta").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/partida").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ranking").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/insignias").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/feedback").permitAll()
 
                         // Endpoints de fútbol/deportes (públicos: random; resto protegido)
                         .requestMatchers(HttpMethod.POST, "/equipo").hasRole("ADMIN")
@@ -60,6 +63,9 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/buscar").permitAll()
                         .requestMatchers("/error").permitAll()
+
+                        // Rutas no protegidas de tipo página web HTML van al manejador de errores
+                        .requestMatchers(HttpMethod.GET, "/*").permitAll()
 
                         .anyRequest().authenticated()
                 )

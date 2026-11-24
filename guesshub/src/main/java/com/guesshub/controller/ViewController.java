@@ -25,4 +25,9 @@ public class ViewController {
     public String perfil() {
         return "perfil";
     }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin";
+    }
 }
