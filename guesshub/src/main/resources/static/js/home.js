@@ -132,8 +132,32 @@
     }
   }
 
+  function hoyKey() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function yaJugoDesafioHoy() {
+    return localStorage.getItem('gh_desafio_diario_fecha') === hoyKey();
+  }
+
+  function mostrarDesafioCompletado() {
+    ui.previewIcon.textContent = '✅';
+    ui.previewTitle.textContent = '¡Desafío diario completado!';
+    ui.previewSub.textContent = 'Ya jugaste el desafío de hoy. Volvé mañana por uno nuevo.';
+    if (ui.btnEmpezar) {
+      ui.btnEmpezar.disabled = true;
+      ui.btnEmpezar.textContent = '⏳ Volvé mañana';
+      ui.btnEmpezar.style.opacity = '0.65';
+      ui.btnEmpezar.style.cursor = 'not-allowed';
+    }
+  }
+
   /* ---------- Precarga del Desafío (Sin Empezar) ---------- */
   async function precargarDesafioDiario() {
+    if (yaJugoDesafioHoy()) {
+      mostrarDesafioCompletado();
+      return;
+    }
     try {
       const res = await fetch('/api/desafio-diario', { headers: GH.authHeaders() });
       if (!res.ok) throw new Error('Error al cargar');
@@ -155,6 +179,10 @@
 
   /* ---------- Inicio Manual: El Usuario Elige Cuándo Jugar ---------- */
   function empezarDesafio() {
+    if (yaJugoDesafioHoy()) {
+      mostrarDesafioCompletado();
+      return;
+    }
     if (!S.desafio) {
       precargarDesafioDiario().then(() => empezarDesafio());
       return;
@@ -199,6 +227,8 @@
 
     const correcto = !!resultado.correcto && !porTiempo;
     ui.input.className = 'game-input ' + (correcto ? 'correct' : 'wrong');
+    localStorage.setItem('gh_desafio_diario_fecha', hoyKey());
+    mostrarDesafioCompletado();
 
     let puntosGanados = null;
     let multiplicador = 1.0;

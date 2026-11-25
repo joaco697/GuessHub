@@ -546,6 +546,7 @@ button { cursor: pointer; border: none; background: none; }
   border-bottom: 1px solid var(--border);
   font-weight: 700;
   font-size: 0.95rem;
+  color: var(--text, #1F2937);
 }
 .autocomplete-item:hover, .autocomplete-item.active {
   background: var(--green-bg);
