@@ -47,7 +47,7 @@
 
 /* ---------- Modo Oscuro ---------- */
 body.dark-mode {
-  --bg-page:        #0F172A;
+  --bg-page:        #0B1120;
   --white:          #1E293B;
   --text-dark:      #F1F5F9;
   --text-mid:       #CBD5E1;
@@ -57,11 +57,49 @@ body.dark-mode {
   --green-bg:       #14331B;
   --yellow-bg:      #33240B;
   --warn-bg:        #331E0B;
+  background-color: #0B1120;
+  color: #F1F5F9;
 }
 body.dark-mode .navbar,
-body.dark-mode .mobile-nav {
+body.dark-mode .mobile-nav,
+body.dark-mode .footer {
+  background: #111827;
+  border-color: #1F2937;
+}
+body.dark-mode .card,
+body.dark-mode .cat-card,
+body.dark-mode .modal-box,
+body.dark-mode .modal-content,
+body.dark-mode .stat-card,
+body.dark-mode .badge-card,
+body.dark-mode .ranking-item,
+body.dark-mode .clue-card,
+body.dark-mode .clue-item {
+  background: #1E293B !important;
+  color: #F1F5F9 !important;
+  border-color: #334155 !important;
+}
+body.dark-mode .autocomplete-dropdown {
   background: #1E293B;
+  border-color: #475569;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+body.dark-mode .autocomplete-item {
+  color: #F1F5F9;
   border-color: #334155;
+}
+body.dark-mode .autocomplete-item:hover,
+body.dark-mode .autocomplete-item.active {
+  background: #14331B;
+  color: #86EFAC;
+}
+body.dark-mode .btn-outline {
+  color: #F1F5F9;
+  border-color: #475569;
+  background: transparent;
+}
+body.dark-mode .btn-outline:hover {
+  background: #334155;
 }
 body.dark-mode .game-input,
 body.dark-mode input,
@@ -70,6 +108,9 @@ body.dark-mode textarea {
   background: #0F172A;
   color: #F1F5F9;
   border-color: #475569;
+}
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode strong {
+  color: #F1F5F9;
 }
   --cat-deporte-bg: #DCFCE7;
   --cat-random:     #EA580C;
