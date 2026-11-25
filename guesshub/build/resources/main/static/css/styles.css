@@ -43,6 +43,144 @@
   --cat-musica:     #7C3AED;
   --cat-musica-bg:  #EDE9FE;
   --cat-deporte:    #16A34A;
+}
+
+/* ---------- Modo Oscuro ---------- */
+body.dark-mode {
+  --bg-page:        #0B1120;
+  --white:          #1E293B;
+  --text-dark:      #F8FAFC;
+  --text-mid:       #CBD5E1;
+  --text-light:     #94A3B8;
+  --border:         rgba(255, 255, 255, 0.08);
+  --neutral-soft:   #334155;
+  --green-bg:       rgba(76, 175, 80, 0.15);
+  --yellow-bg:      rgba(255, 167, 38, 0.15);
+  --warn-bg:        rgba(251, 140, 0, 0.15);
+  background-color: #0B1120;
+  color: #F8FAFC;
+}
+body.dark-mode .top-navbar,
+body.dark-mode .bottom-nav,
+body.dark-mode .site-footer {
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode .brand-logo {
+  color: #F8FAFC;
+}
+body.dark-mode .nav-link-btn {
+  color: #CBD5E1;
+}
+body.dark-mode .nav-link-btn:hover,
+body.dark-mode .nav-link-btn.active {
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.12);
+}
+body.dark-mode .card,
+body.dark-mode .cat-card,
+body.dark-mode .modal-box,
+body.dark-mode .modal-content,
+body.dark-mode .stat-card,
+body.dark-mode .badge-card,
+body.dark-mode .ranking-item,
+body.dark-mode .clue-card,
+body.dark-mode .clue-item {
+  background: #1E293B;
+  color: #F8FAFC;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+body.dark-mode .autocomplete-dropdown {
+  background: #1E293B;
+  border-color: #475569;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+body.dark-mode .autocomplete-item {
+  color: #F1F5F9;
+  border-color: #334155;
+}
+body.dark-mode .autocomplete-item:hover,
+body.dark-mode .autocomplete-item.active {
+  background: #14331B;
+  color: #86EFAC;
+}
+body.dark-mode .btn-outline {
+  color: #F1F5F9;
+  border-color: #475569;
+  background: transparent;
+}
+body.dark-mode .btn-outline:hover {
+  background: #334155;
+}
+body.dark-mode .game-input,
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background: #0F172A;
+  color: #F1F5F9;
+  border-color: #475569;
+}
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode strong {
+  color: #F8FAFC;
+}
+body.dark-mode p, body.dark-mode span, body.dark-mode label {
+  color: inherit;
+}
+body.dark-mode .text-muted,
+body.dark-mode .subtitle,
+body.dark-mode small {
+  color: #94A3B8 !important;
+}
+body.dark-mode table,
+body.dark-mode th,
+body.dark-mode td {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #E2E8F0;
+}
+body.dark-mode thead th {
+  background: #0F172A;
+  color: #94A3B8;
+}
+body.dark-mode tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+body.dark-mode .tab-btn,
+body.dark-mode .filter-chip,
+body.dark-mode .cat-chip {
+  background: #1E293B;
+  color: #CBD5E1;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .tab-btn.active,
+body.dark-mode .filter-chip.active,
+body.dark-mode .cat-chip.active {
+  background: #4CAF50;
+  color: #FFFFFF;
+  border-color: #4CAF50;
+}
+body.dark-mode .nav-streak-pill {
+  background: rgba(255, 167, 38, 0.15);
+  color: #FFB74D;
+  border-color: rgba(255, 167, 38, 0.3);
+}
+body.dark-mode .modal-close,
+body.dark-mode .close-btn {
+  color: #94A3B8;
+}
+body.dark-mode .modal-close:hover,
+body.dark-mode .close-btn:hover {
+  color: #F8FAFC;
+}
+body.dark-mode,
+body.dark-mode .card,
+body.dark-mode .top-navbar,
+body.dark-mode .bottom-nav {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+:root {
   --cat-deporte-bg: #DCFCE7;
   --cat-random:     #EA580C;
   --cat-random-bg:  #FFEDD5;
@@ -526,17 +664,18 @@ button { cursor: pointer; border: none; background: none; }
 
 .autocomplete-dropdown {
   position: absolute;
-  top: 100%;
+  bottom: 100%;
+  top: auto;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 999;
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow);
   max-height: 220px;
   overflow-y: auto;
-  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
   list-style: none;
 }
 .autocomplete-item {
@@ -545,6 +684,7 @@ button { cursor: pointer; border: none; background: none; }
   border-bottom: 1px solid var(--border);
   font-weight: 700;
   font-size: 0.95rem;
+  color: var(--text, #1F2937);
 }
 .autocomplete-item:hover, .autocomplete-item.active {
   background: var(--green-bg);

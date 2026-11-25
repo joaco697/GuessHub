@@ -49,22 +49,34 @@
 body.dark-mode {
   --bg-page:        #0B1120;
   --white:          #1E293B;
-  --text-dark:      #F1F5F9;
+  --text-dark:      #F8FAFC;
   --text-mid:       #CBD5E1;
   --text-light:     #94A3B8;
-  --border:         #334155;
+  --border:         rgba(255, 255, 255, 0.08);
   --neutral-soft:   #334155;
-  --green-bg:       #14331B;
-  --yellow-bg:      #33240B;
-  --warn-bg:        #331E0B;
+  --green-bg:       rgba(76, 175, 80, 0.15);
+  --yellow-bg:      rgba(255, 167, 38, 0.15);
+  --warn-bg:        rgba(251, 140, 0, 0.15);
   background-color: #0B1120;
-  color: #F1F5F9;
+  color: #F8FAFC;
 }
-body.dark-mode .navbar,
-body.dark-mode .mobile-nav,
-body.dark-mode .footer {
-  background: #111827;
-  border-color: #1F2937;
+body.dark-mode .top-navbar,
+body.dark-mode .bottom-nav,
+body.dark-mode .site-footer {
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode .brand-logo {
+  color: #F8FAFC;
+}
+body.dark-mode .nav-link-btn {
+  color: #CBD5E1;
+}
+body.dark-mode .nav-link-btn:hover,
+body.dark-mode .nav-link-btn.active {
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.12);
 }
 body.dark-mode .card,
 body.dark-mode .cat-card,
@@ -75,9 +87,10 @@ body.dark-mode .badge-card,
 body.dark-mode .ranking-item,
 body.dark-mode .clue-card,
 body.dark-mode .clue-item {
-  background: #1E293B !important;
-  color: #F1F5F9 !important;
-  border-color: #334155 !important;
+  background: #1E293B;
+  color: #F8FAFC;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 body.dark-mode .autocomplete-dropdown {
   background: #1E293B;
@@ -110,8 +123,64 @@ body.dark-mode textarea {
   border-color: #475569;
 }
 body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode strong {
-  color: #F1F5F9;
+  color: #F8FAFC;
 }
+body.dark-mode p, body.dark-mode span, body.dark-mode label {
+  color: inherit;
+}
+body.dark-mode .text-muted,
+body.dark-mode .subtitle,
+body.dark-mode small {
+  color: #94A3B8 !important;
+}
+body.dark-mode table,
+body.dark-mode th,
+body.dark-mode td {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #E2E8F0;
+}
+body.dark-mode thead th {
+  background: #0F172A;
+  color: #94A3B8;
+}
+body.dark-mode tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+body.dark-mode .tab-btn,
+body.dark-mode .filter-chip,
+body.dark-mode .cat-chip {
+  background: #1E293B;
+  color: #CBD5E1;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .tab-btn.active,
+body.dark-mode .filter-chip.active,
+body.dark-mode .cat-chip.active {
+  background: #4CAF50;
+  color: #FFFFFF;
+  border-color: #4CAF50;
+}
+body.dark-mode .nav-streak-pill {
+  background: rgba(255, 167, 38, 0.15);
+  color: #FFB74D;
+  border-color: rgba(255, 167, 38, 0.3);
+}
+body.dark-mode .modal-close,
+body.dark-mode .close-btn {
+  color: #94A3B8;
+}
+body.dark-mode .modal-close:hover,
+body.dark-mode .close-btn:hover {
+  color: #F8FAFC;
+}
+body.dark-mode,
+body.dark-mode .card,
+body.dark-mode .top-navbar,
+body.dark-mode .bottom-nav {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+:root {
   --cat-deporte-bg: #DCFCE7;
   --cat-random:     #EA580C;
   --cat-random-bg:  #FFEDD5;

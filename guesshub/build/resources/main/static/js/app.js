@@ -384,3 +384,24 @@
   });
 
 })();
+
+/* ---------- Modo Oscuro Global ---------- */
+(function () {
+  const savedTheme = localStorage.getItem('gh_theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-theme-toggle');
+    if (!btn) return;
+    const syncIcon = () => {
+      btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    };
+    syncIcon();
+    btn.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('gh_theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+      syncIcon();
+    });
+  });
+})();
