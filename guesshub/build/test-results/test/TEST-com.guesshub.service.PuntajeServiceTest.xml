@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.guesshub.service.PuntajeServiceTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-25T18:22:46.749Z" hostname="MacBook-Pro-de-joaquin.local" time="0.121">
+  <properties/>
+  <testcase name="Multiplicador total tiene un tope máximo estricto de x2.0 según relevamiento" classname="com.guesshub.service.PuntajeServiceTest" time="0.11"/>
+  <testcase name="Cálculo de multiplicador base por dificultad" classname="com.guesshub.service.PuntajeServiceTest" time="0.001"/>
+  <testcase name="Multiplicador aumenta +0.05 por cada día de racha global" classname="com.guesshub.service.PuntajeServiceTest" time="0.002"/>
+  <testcase name="Respuesta correcta descuenta pistas y tiempo correctamente" classname="com.guesshub.service.PuntajeServiceTest" time="0.002"/>
+  <testcase name="Respuesta correcta siempre otorga puntos (piso mínimo de 50 pts garantizado)" classname="com.guesshub.service.PuntajeServiceTest" time="0.002"/>
+  <testcase name="Respuesta incorrecta siempre otorga 0 puntos" classname="com.guesshub.service.PuntajeServiceTest" time="0.002"/>
+  <testcase name="Multiplicador aumenta por racha en partida a partir de 2 aciertos seguidos" classname="com.guesshub.service.PuntajeServiceTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

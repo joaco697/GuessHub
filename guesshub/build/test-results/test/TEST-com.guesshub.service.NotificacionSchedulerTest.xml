@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.guesshub.service.NotificacionSchedulerTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-25T18:22:46.634Z" hostname="MacBook-Pro-de-joaquin.local" time="0.113">
+  <properties/>
+  <testcase name="Envía alerta de racha en riesgo a usuario que jugó ayer y no hoy" classname="com.guesshub.service.NotificacionSchedulerTest" time="0.113"/>
+  <system-out><![CDATA[2026-11-25T15:22:46.747-03:00  INFO 3453 --- [guesshub-test] [    Test worker] c.g.service.NotificacionScheduler        : Notificaciones de racha en riesgo enviadas a 1 usuarios
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

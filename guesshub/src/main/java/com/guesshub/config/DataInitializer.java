@@ -15,11 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Inicializador de datos para asegurar exactamente los perfiles requeridos:
  * 1. admin (admin@gmail.com / admin123) - Rol ADMIN y CLIENTE
- * 2. joaco (joacodeca07@gmail.com / joaco123) - Rol CLIENTE con puntuación en ranking
+ * 2. joaco (joacodeca07@gmail.com / joaco123) - Rol CLIENTE con puntuación en
+ * ranking
  */
 @Slf4j
 @Component
@@ -47,14 +49,15 @@ public class DataInitializer implements CommandLineRunner {
         Usuario admin = usuarioRepository.findByUsername("admin@gmail.com").orElse(null);
         if (admin == null) {
             admin = new Usuario("admin@gmail.com", passwordEncoder.encode("admin123"), "admin");
-            admin.setRoles(Set.of(rolAdmin, rolCliente));
+            admin.setRoles(new HashSet<>(Set.of(rolAdmin, rolCliente)));
+            ;
             admin.setFotoPerfil("⚡");
             usuarioRepository.save(admin);
             log.info("Usuario admin creado exitosamente: admin@gmail.com");
         } else {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setDisplayName("admin");
-            admin.setRoles(Set.of(rolAdmin, rolCliente));
+            admin.setRoles(new HashSet<>(Set.of(rolAdmin, rolCliente)));
             usuarioRepository.save(admin);
         }
 
@@ -75,14 +78,14 @@ public class DataInitializer implements CommandLineRunner {
         Usuario joaco = usuarioRepository.findByUsername("joacodeca07@gmail.com").orElse(null);
         if (joaco == null) {
             joaco = new Usuario("joacodeca07@gmail.com", passwordEncoder.encode("joaco123"), "joaco");
-            joaco.setRoles(Set.of(rolCliente));
+            joaco.setRoles(new HashSet<>(Set.of(rolCliente)));
             joaco.setFotoPerfil("🚀");
             usuarioRepository.save(joaco);
             log.info("Usuario joaco creado exitosamente: joacodeca07@gmail.com");
         } else {
             joaco.setPassword(passwordEncoder.encode("joaco123"));
             joaco.setDisplayName("joaco");
-            joaco.setRoles(Set.of(rolCliente));
+            joaco.setRoles(new HashSet<>(Set.of(rolCliente)));
             usuarioRepository.save(joaco);
         }
 
