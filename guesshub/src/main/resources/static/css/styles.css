@@ -43,6 +43,34 @@
   --cat-musica:     #7C3AED;
   --cat-musica-bg:  #EDE9FE;
   --cat-deporte:    #16A34A;
+}
+
+/* ---------- Modo Oscuro ---------- */
+body.dark-mode {
+  --bg-page:        #0F172A;
+  --white:          #1E293B;
+  --text-dark:      #F1F5F9;
+  --text-mid:       #CBD5E1;
+  --text-light:     #94A3B8;
+  --border:         #334155;
+  --neutral-soft:   #334155;
+  --green-bg:       #14331B;
+  --yellow-bg:      #33240B;
+  --warn-bg:        #331E0B;
+}
+body.dark-mode .navbar,
+body.dark-mode .mobile-nav {
+  background: #1E293B;
+  border-color: #334155;
+}
+body.dark-mode .game-input,
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background: #0F172A;
+  color: #F1F5F9;
+  border-color: #475569;
+}
   --cat-deporte-bg: #DCFCE7;
   --cat-random:     #EA580C;
   --cat-random-bg:  #FFEDD5;
